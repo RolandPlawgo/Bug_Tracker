@@ -6,8 +6,8 @@ namespace Bug_Tracker.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
-        //public DbSet<Project> Projects { get; set; }
-        //public DbSet<Ticket> Tickets { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
