@@ -77,7 +77,7 @@ namespace Bug_Tracker.Controllers
         // GET: ProjectsController/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
         // POST: ProjectsController/Delete/5
