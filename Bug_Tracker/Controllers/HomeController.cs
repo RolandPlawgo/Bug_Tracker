@@ -16,7 +16,7 @@ namespace Bug_Tracker.Controllers
         //GET: HomeController/Index
         public IActionResult Index()
         {
-            _logger.LogInformation("GET: HomeController/Index");
+            _logger.LogInformation("GET: Home/Index");
             return View();
         }
 

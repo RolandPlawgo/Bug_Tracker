@@ -18,21 +18,21 @@ namespace Bug_Tracker.Controllers
         // GET: ProjectsController
         public ActionResult Index()
         {
-            _logger.LogInformation("GET: ProjectsController/Index");
+            _logger.LogInformation("GET: Projects/Index");
             return View(_context.Projects.ToList());
         }
 
         // GET: ProjectsController/Details/5
         public ActionResult Details(int id)
         {
-            _logger.LogInformation("GET: ProjectsController/Details/{id}", id);
+            _logger.LogInformation("GET: Projects/Details/{id}", id);
             return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
         // GET: ProjectsController/Create
         public ActionResult Create()
         {
-            _logger.LogInformation("GET: ProjectsController/Create");
+            _logger.LogInformation("GET: Projects/Create");
             return View();
         }
 
@@ -43,7 +43,7 @@ namespace Bug_Tracker.Controllers
         {
             try
             {
-                _logger.LogInformation("POST: ProjectsController/Create");
+                _logger.LogInformation("POST: Projects/Create");
                 Project newProject = project;
                 newProject.Tickets = new List<Ticket>();
                 _context.Projects.Add(newProject);
@@ -53,7 +53,7 @@ namespace Bug_Tracker.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("POST: ProjectsController/Create - Exception: {exception}", ex);
+                _logger.LogWarning("POST: Projects/Create - Exception: {exception}", ex);
                 return View();
             }
         }
@@ -61,7 +61,7 @@ namespace Bug_Tracker.Controllers
         // GET: ProjectsController/Edit/5
         public ActionResult Edit(int id)
         {
-            _logger.LogInformation("GET: ProjectsController/Edit/{id}", id);
+            _logger.LogInformation("GET: Projects/Edit/{id}", id);
             return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
@@ -72,7 +72,7 @@ namespace Bug_Tracker.Controllers
         {
             try
             {
-                _logger.LogInformation("POST: ProjectsController/Edit/{id}", id);
+                _logger.LogInformation("POST: Projects/Edit/{id}", id);
                 _context.Projects.Where(project => project.Id == id).First().Title = project.Title;
                 _context.Projects.Where(project => project.Id == id).First().Description = project.Description;
                 _context.SaveChanges();
@@ -81,7 +81,7 @@ namespace Bug_Tracker.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("POST: ProjectsController/Edit/{id} - Exception: {exception}", id, ex);
+                _logger.LogWarning("POST: Projects/Edit/{id} - Exception: {exception}", id, ex);
                 return View();
             }
         }
@@ -89,7 +89,7 @@ namespace Bug_Tracker.Controllers
         // GET: ProjectsController/Delete/5
         public ActionResult Delete(int id)
         {
-            _logger.LogInformation("GET: ProjectsController/Delete/{id}", id);
+            _logger.LogInformation("GET: Projects/Delete/{id}", id);
             return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
@@ -100,7 +100,7 @@ namespace Bug_Tracker.Controllers
         {
             try
             {
-                _logger.LogInformation("POST: ProjectsController/Delete/{id}", id);
+                _logger.LogInformation("POST: Projects/Delete/{id}", id);
                 _context.Projects.Remove(_context.Projects.Where(project => project.Id == id).First());
                 _context.SaveChanges();
 
@@ -108,7 +108,7 @@ namespace Bug_Tracker.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("POST: ProjectsController/Delete/{id} Exception {exception}", id, ex);
+                _logger.LogWarning("POST: Projects/Delete/{id} Exception {exception}", id, ex);
                 return View();
             }
         }
