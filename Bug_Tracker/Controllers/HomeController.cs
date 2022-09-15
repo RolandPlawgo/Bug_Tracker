@@ -13,7 +13,7 @@ namespace Bug_Tracker.Controllers
             _logger = logger;
         }
 
-        //GET: HomeController/Index
+        //GET: Home/Index
         public IActionResult Index()
         {
             _logger.LogInformation("GET: Home/Index");

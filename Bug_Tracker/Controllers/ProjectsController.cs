@@ -15,28 +15,28 @@ namespace Bug_Tracker.Controllers
             _logger = logger;
         }
 
-        // GET: ProjectsController
+        // GET: Projects
         public ActionResult Index()
         {
             _logger.LogInformation("GET: Projects/Index");
             return View(_context.Projects.ToList());
         }
 
-        // GET: ProjectsController/Details/5
+        // GET: Projects/Details/5
         public ActionResult Details(int id)
         {
             _logger.LogInformation("GET: Projects/Details/{id}", id);
             return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
-        // GET: ProjectsController/Create
+        // GET: Projects/Create
         public ActionResult Create()
         {
             _logger.LogInformation("GET: Projects/Create");
             return View();
         }
 
-        // POST: ProjectsController/Create
+        // POST: Projects/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind("Title,Description")] Project project)
@@ -58,14 +58,14 @@ namespace Bug_Tracker.Controllers
             }
         }
 
-        // GET: ProjectsController/Edit/5
+        // GET: Projects/Edit/5
         public ActionResult Edit(int id)
         {
             _logger.LogInformation("GET: Projects/Edit/{id}", id);
             return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
-        // POST: ProjectsController/Edit/5
+        // POST: Projects/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, [Bind("Title,Description")] Project project)
@@ -86,14 +86,14 @@ namespace Bug_Tracker.Controllers
             }
         }
 
-        // GET: ProjectsController/Delete/5
+        // GET: Projects/Delete/5
         public ActionResult Delete(int id)
         {
             _logger.LogInformation("GET: Projects/Delete/{id}", id);
             return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
-        // POST: ProjectsController/Delete/5
+        // POST: Projects/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
