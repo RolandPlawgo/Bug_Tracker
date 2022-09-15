@@ -22,7 +22,14 @@ namespace Bug_Tracker.Controllers
         // GET: ProjectsController/Details/5
         public ActionResult Details(int id)
         {
-            return View(_context.Projects.Where(project => project.Id == id).First());
+            try
+            {
+                return View(_context.Projects.Where(project => project.Id == id).First());
+            }
+            catch
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // GET: ProjectsController/Create
@@ -36,12 +43,13 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind("Title,Description")] Project project)
         {
-            Project newProject = project;
-            newProject.Tickets = new List<Ticket>();
-            _context.Projects.Add(newProject);
-            _context.SaveChanges();
             try
             {
+                Project newProject = project;
+                newProject.Tickets = new List<Ticket>();
+                _context.Projects.Add(newProject);
+                _context.SaveChanges();
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -61,11 +69,12 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, [Bind("Title,Description")] Project project)
         {
-            _context.Projects.Where(project => project.Id == id).First().Title = project.Title;
-            _context.Projects.Where(project => project.Id == id).First().Description = project.Description;
-            _context.SaveChanges();
             try
             {
+                _context.Projects.Where(project => project.Id == id).First().Title = project.Title;
+                _context.Projects.Where(project => project.Id == id).First().Description = project.Description;
+                _context.SaveChanges();
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -85,10 +94,11 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
         {
-            _context.Projects.Remove(_context.Projects.Where(project => project.Id == id).First());
-            _context.SaveChanges();
             try
             {
+                _context.Projects.Remove(_context.Projects.Where(project => project.Id == id).First());
+                _context.SaveChanges();
+
                 return RedirectToAction(nameof(Index));
             }
             catch
