@@ -8,33 +8,31 @@ namespace Bug_Tracker.Controllers
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public ProjectsController(ApplicationDbContext context)
+        private readonly ILogger<ProjectsController> _logger;
+        public ProjectsController(ApplicationDbContext context, ILogger<ProjectsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: ProjectsController
         public ActionResult Index()
         {
+            _logger.LogInformation("GET: ProjectsController/Index");
             return View(_context.Projects.ToList());
         }
 
         // GET: ProjectsController/Details/5
         public ActionResult Details(int id)
         {
-            try
-            {
-                return View(_context.Projects.Where(project => project.Id == id).First());
-            }
-            catch
-            {
-                return RedirectToAction(nameof(Index));
-            }
+            _logger.LogInformation("GET: ProjectsController/Details/{id}", id);
+            return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
         // GET: ProjectsController/Create
         public ActionResult Create()
         {
+            _logger.LogInformation("GET: ProjectsController/Create");
             return View();
         }
 
@@ -45,6 +43,7 @@ namespace Bug_Tracker.Controllers
         {
             try
             {
+                _logger.LogInformation("POST: ProjectsController/Create");
                 Project newProject = project;
                 newProject.Tickets = new List<Ticket>();
                 _context.Projects.Add(newProject);
@@ -52,8 +51,9 @@ namespace Bug_Tracker.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning("POST: ProjectsController/Create - Exception: {exception}", ex);
                 return View();
             }
         }
@@ -61,6 +61,7 @@ namespace Bug_Tracker.Controllers
         // GET: ProjectsController/Edit/5
         public ActionResult Edit(int id)
         {
+            _logger.LogInformation("GET: ProjectsController/Edit/{id}", id);
             return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
@@ -71,14 +72,16 @@ namespace Bug_Tracker.Controllers
         {
             try
             {
+                _logger.LogInformation("POST: ProjectsController/Edit/{id}", id);
                 _context.Projects.Where(project => project.Id == id).First().Title = project.Title;
                 _context.Projects.Where(project => project.Id == id).First().Description = project.Description;
                 _context.SaveChanges();
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning("POST: ProjectsController/Edit/{id} - Exception: {exception}", id, ex);
                 return View();
             }
         }
@@ -86,6 +89,7 @@ namespace Bug_Tracker.Controllers
         // GET: ProjectsController/Delete/5
         public ActionResult Delete(int id)
         {
+            _logger.LogInformation("GET: ProjectsController/Delete/{id}", id);
             return View(_context.Projects.Where(project => project.Id == id).First());
         }
 
@@ -96,13 +100,15 @@ namespace Bug_Tracker.Controllers
         {
             try
             {
+                _logger.LogInformation("POST: ProjectsController/Delete/{id}", id);
                 _context.Projects.Remove(_context.Projects.Where(project => project.Id == id).First());
                 _context.SaveChanges();
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning("POST: ProjectsController/Delete/{id} Exception {exception}", id, ex);
                 return View();
             }
         }
