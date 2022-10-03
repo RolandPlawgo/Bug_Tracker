@@ -18,7 +18,7 @@ namespace Bug_Tracker.Controllers
         // GET: Projects
         public ActionResult Index()
         {
-            _logger.LogInformation("GET: Projects/Index");
+            _logger.LogInformation("GET: Projects");
             return View(_context.Projects.ToList());
         }
 
@@ -41,19 +41,20 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind("Title,Description")] Project project)
         {
-            try
+            project.Tickets = new List<Ticket>();
+            ModelState.ClearValidationState("Tickets");
+            ModelState.MarkFieldValid("Tickets");
+            if (ModelState.IsValid)
             {
                 _logger.LogInformation("POST: Projects/Create");
-                Project newProject = project;
-                newProject.Tickets = new List<Ticket>();
-                _context.Projects.Add(newProject);
+                _context.Projects.Add(project);
                 _context.SaveChanges();
 
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogWarning("POST: Projects/Create - Exception: {exception}", ex);
+                _logger.LogInformation("POST: Projects/Create - model state invalid");
                 return View();
             }
         }
@@ -70,19 +71,22 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, [Bind("Title,Description")] Project project)
         {
-            try
+            ModelState.ClearValidationState("Tickets");
+            ModelState.MarkFieldValid("Tickets");
+            if (ModelState.IsValid)
             {
                 _logger.LogInformation("POST: Projects/Edit/{id}", id);
-                _context.Projects.Where(project => project.Id == id).First().Title = project.Title;
-                _context.Projects.Where(project => project.Id == id).First().Description = project.Description;
+                var projectToEdit = _context.Projects.Where(project => project.Id == id).First();
+                projectToEdit.Title = project.Title;
+                projectToEdit.Description = project.Description;
                 _context.SaveChanges();
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Details), new {id });
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogWarning("POST: Projects/Edit/{id} - Exception: {exception}", id, ex);
-                return View();
+                _logger.LogInformation("POST: Projects/Edit - model state invalid");
+                return View(project);
             }
         }
 
@@ -108,7 +112,7 @@ namespace Bug_Tracker.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("POST: Projects/Delete/{id} Exception {exception}", id, ex);
+                _logger.LogError("POST: Projects/Delete/{id} Exception {exception}", id, ex.Message);
                 return View();
             }
         }

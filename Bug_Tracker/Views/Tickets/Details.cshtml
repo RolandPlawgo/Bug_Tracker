@@ -1,33 +1,16 @@
 ﻿@model Bug_Tracker.Models.Ticket
 
-@{
-    Layout = null;
-}
-
-<!DOCTYPE html>
-
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Details</title>
-</head>
-<body>
-
 <div>
     <h4>Ticket</h4>
     <hr />
+    <h1>@Html.DisplayFor(model => model.Title)</h1>
+    <h5>@Html.DisplayFor(model => model.ShortDescription)</h5>
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
+            @Html.DisplayNameFor(model => model.Project)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
+            @Html.DisplayFor(model => model.Project.Title)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Status)
@@ -47,17 +30,21 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Date)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Project)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Project.Id)
-        </dd>
     </dl>
+    <br />
+    <h5>@Html.DisplayNameFor(m => m.LongDescription)</h5>
+    <p>@Html.DisplayFor(model => model.LongDescription)</p>
 </div>
+<br />
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-controller="Comments" asp-action="Index" asp-route-ticketId="@Model?.Id">Comments</a>
 </div>
-</body>
-</html>
+<br/>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-primary">Edit</a> &nbsp;
+    <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-outline-danger">Delete</a>  
+</div>
+<br />
+<div>
+    <a asp-action="Index" class="btn btn-outline-secondary"><< Back</a>
+</div>

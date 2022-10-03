@@ -1,168 +1,230 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Bug_Tracker.Data;
+﻿using Bug_Tracker.Data;
 using Bug_Tracker.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bug_Tracker.Controllers
 {
     public class TicketsController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public TicketsController(ApplicationDbContext context)
+        private readonly ILogger<TicketsController> _logger;
+        public TicketsController(ApplicationDbContext context, ILogger<TicketsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: Tickets
-        public async Task<IActionResult> Index()
+        public IActionResult Index(string sortOrder, string searchString, string statusFilter, string priorityFilter, string projectFilter, int page = 1)
         {
-            var applicationDbContext = _context.Tickets.Include(t => t.Project);
-            return View(await applicationDbContext.ToListAsync());
-        }
+            _logger.LogInformation("GET: Tickets");
 
-        // GET: Tickets/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _context.Tickets == null)
+            int elementsOnPage = 10;
+
+            ViewData["CurrentPage"] = page;
+
+            ViewData["TitleSortParam"] = sortOrder == "title_asc" ? "title_desc" : "title_asc";
+            ViewData["DateSortParam"] = sortOrder == "date_desc" ? "date_asc" : "date_desc";
+            ViewData["PrioritySortParam"] = sortOrder == "priority_desc" ? "priority_asc" : "priority_desc";
+
+            ViewData["SortOrder"] = sortOrder;
+            ViewData["SearchString"] = searchString;
+            ViewData["StatusFilter"] = statusFilter;
+            ViewData["PriorityFilter"] = priorityFilter;
+            ViewData["ProjectFilter"] = projectFilter;
+
+            List<string> projectTitles = new List<string>();
+            foreach (var project in _context.Projects)
             {
-                return NotFound();
+                projectTitles.Add(project.Title);
+            }
+            ViewData["Projects"] = projectTitles;
+
+            var tickets = from s in _context.Tickets.Include(t => t.Project)
+                          select s;
+            
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                tickets = tickets.Where(t => t.Title.ToLower().Contains(searchString.ToLower())
+                                          || t.ShortDescription.ToLower().Contains(searchString.ToLower())
+                                          || t.Project.Title.ToLower().Contains(searchString.ToLower()));
             }
 
-            var ticket = await _context.Tickets
-                .Include(t => t.Project)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ticket == null)
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "any")
             {
-                return NotFound();
+                tickets = tickets.Where(t => t.Status == (Status)Enum.Parse(typeof(Status), statusFilter));
             }
 
-            return View(ticket);
+            if (!string.IsNullOrEmpty(priorityFilter) && priorityFilter != "any")
+            {
+                tickets = tickets.Where(t => t.Priority == (Priority)Enum.Parse(typeof(Priority), priorityFilter));
+            }
+
+            if (!string.IsNullOrEmpty(projectFilter) && projectFilter != "any")
+            {
+                tickets = tickets.Where(t => t.Project.Title == projectFilter);
+            }
+
+            switch (sortOrder)
+            {
+                case "title_asc":
+                    tickets = tickets.OrderBy(t => t.Title);
+                    break;
+                case "title_desc":
+                    tickets = tickets.OrderByDescending(t => t.Title);
+                    break;
+                case "priority_asc":
+                    tickets = tickets.OrderBy(t => t.Priority);
+                    break;
+                case "priority_desc":
+                    tickets = tickets.OrderByDescending(t => t.Priority);
+                    break;
+                case "date_asc":
+                    tickets = tickets.OrderBy(t => t.Date);
+                    break;
+                default:
+                    tickets = tickets.OrderByDescending(t => t.Date);
+                    break;
+            }
+
+            ViewData["Pages"] = (int)Math.Ceiling((decimal)tickets.Count() / (decimal)elementsOnPage);
+
+            List<Ticket> ticketsToDisplay = tickets.Skip((page - 1) * elementsOnPage).Take(elementsOnPage).ToList();
+
+            return View(ticketsToDisplay);
         }
 
         // GET: Tickets/Create
-        public IActionResult Create()
+        public ActionResult Create()
         {
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Id");
+            _logger.LogInformation("GET: Tickets/Create");
+
+            List<string> projectTitles = (from p in _context.Projects 
+                                          select p.Title)
+                                          .ToList();
+            ViewData["ProjectTitles"] = projectTitles;
             return View();
         }
 
         // POST: Tickets/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,Status,Priority,Date,ProjectId")] Ticket ticket)
+        public ActionResult Create([Bind("Title,ShortDescription,LongDescription,Status,Priority")] Ticket ticket, string projectTitle)
         {
+            List<string> projectTitles = (from p in _context.Projects
+                                          select p.Title)
+                                          .ToList();
+            ViewData["ProjectTitles"] = projectTitles;
+
+            ticket.Date = DateTime.Now;
+            ticket.Comments = new List<Comment>();
+
+            var project = _context.Projects.Include(p => p.Tickets).Where(p => p.Title == projectTitle).First();
+            //ticket.Project = project;
+
+            ModelState.ClearValidationState("Comments");
+            ModelState.MarkFieldValid("Comments");
+            ModelState.ClearValidationState("Project");
+            ModelState.MarkFieldValid("Project");
             if (ModelState.IsValid)
             {
-                _context.Add(ticket);
-                await _context.SaveChangesAsync();
+                _logger.LogInformation("POST: Tickets/Create");
+
+                project.Tickets.Add(ticket);
+                _context.SaveChanges();
+
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Id", ticket.ProjectId);
-            return View(ticket);
+            else
+            {
+                _logger.LogInformation("POST: Tickets/Create - model state invalid");
+
+                return View();
+            }
         }
 
-        // GET: Tickets/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: Tickets/Details/1
+        public ActionResult Details(int id)
         {
-            if (id == null || _context.Tickets == null)
-            {
-                return NotFound();
-            }
+            _logger.LogInformation("GET: Tickets/Details/{id}", id);
 
-            var ticket = await _context.Tickets.FindAsync(id);
-            if (ticket == null)
-            {
-                return NotFound();
-            }
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Id", ticket.ProjectId);
+            Ticket ticket = _context.Tickets.Include(t => t.Project).Where(t => t.Id == id).First();
             return View(ticket);
         }
 
-        // POST: Tickets/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // GET: Tickets/Edit/1
+        public ActionResult Edit(int id)
+        {
+            _logger.LogInformation("GET: Tickets/Edit/{id}", id);
+
+            List<string> projectTitles = (from p in _context.Projects
+                                          select p.Title)
+                                          .ToList();
+            ViewData["ProjectTitles"] = projectTitles;
+
+            Ticket ticket = _context.Tickets.Include(t => t.Project).Where(t => t.Id == id).First();
+            return View(ticket);
+        }
+
+        // POST: Tickets/Edit/1
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Status,Priority,Date,ProjectId")] Ticket ticket)
+        public ActionResult Edit(int id, [Bind("Title,ShortDescription,LongDescription,Status,Priority")] Ticket ticket, string projectTitle)
         {
-            if (id != ticket.Id)
-            {
-                return NotFound();
-            }
+            var ticketToEdit = _context.Tickets.Include(t => t.Project).Where(t => t.Id == id).First();
+            ticketToEdit.Title = ticket.Title;
+            ticketToEdit.ShortDescription = ticket.ShortDescription;
+            ticketToEdit.LongDescription = ticket.LongDescription;
+            ticketToEdit.Status = ticket.Status;
+            ticketToEdit.Priority = ticket.Priority;
+            ticketToEdit.Project = _context.Projects.Where(p => p.Title == projectTitle).First();
+            ticketToEdit.ProjectId = ticketToEdit.Project.Id;
 
+            ModelState.ClearValidationState("Comments");
+            ModelState.MarkFieldValid("Comments");
+            ModelState.ClearValidationState("Project");
+            ModelState.MarkFieldValid("Project");
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(ticket);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TicketExists(ticket.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                _logger.LogInformation("POST: Tickets/Edit/{id}", id);
+
+                _context.SaveChanges();
+
+                return RedirectToAction(nameof(Details), new { id = id });
             }
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Id", ticket.ProjectId);
-            return View(ticket);
+            else
+            {
+                _logger.LogInformation("POST: Tickets/Edit/{id} - model state invalid", id);
+
+                List<string> projectTitles = (from p in _context.Projects
+                                              select p.Title)
+                                          .ToList();
+                ViewData["ProjectTitles"] = projectTitles;
+                
+                return View(ticketToEdit);
+            }
         }
 
-        // GET: Tickets/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Tickets/Delete/1
+        public ActionResult Delete(int id)
         {
-            if (id == null || _context.Tickets == null)
-            {
-                return NotFound();
-            }
+            _logger.LogInformation("GET: Tickets/Delete/{id}", id);
 
-            var ticket = await _context.Tickets
-                .Include(t => t.Project)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ticket == null)
-            {
-                return NotFound();
-            }
-
+            Ticket ticket = _context.Tickets.Include(t => t.Project).Where(t => t.Id == id).First();
             return View(ticket);
         }
 
-        // POST: Tickets/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // Post: Tickets/Delete/1
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult Delete(int id, IFormCollection formCollection)
         {
-            if (_context.Tickets == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Tickets'  is null.");
-            }
-            var ticket = await _context.Tickets.FindAsync(id);
-            if (ticket != null)
-            {
-                _context.Tickets.Remove(ticket);
-            }
-            
-            await _context.SaveChangesAsync();
+            _logger.LogInformation("POST: Tickets/Delete/{id}", id);
+
+            _context.Tickets.Remove(_context.Tickets.Where(t => t.Id == id).First());
+            _context.SaveChanges();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TicketExists(int id)
-        {
-          return (_context.Tickets?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
