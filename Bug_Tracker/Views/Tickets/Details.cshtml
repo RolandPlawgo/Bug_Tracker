@@ -1,10 +1,9 @@
 ﻿@model Bug_Tracker.Models.Ticket
 
 <div>
-    <h4>Ticket</h4>
-    <hr />
     <h1>@Html.DisplayFor(model => model.Title)</h1>
     <h5>@Html.DisplayFor(model => model.ShortDescription)</h5>
+    <br />
     <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Project)
@@ -40,6 +39,7 @@
     <a asp-controller="Comments" asp-action="Index" asp-route-ticketId="@Model?.Id">Comments</a>
 </div>
 <br/>
+<br />
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-primary">Edit</a> &nbsp;
     <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-outline-danger">Delete</a>  

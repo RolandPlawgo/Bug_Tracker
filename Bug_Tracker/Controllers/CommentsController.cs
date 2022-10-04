@@ -9,14 +9,18 @@ namespace Bug_Tracker.Controllers
     public class CommentsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public CommentsController(ApplicationDbContext context)
+        private readonly ILogger<CommentsController> _logger;
+        public CommentsController(ApplicationDbContext context, ILogger<CommentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: Comments?ticketId=1
         public ActionResult Index(int ticketId)
         {
+            _logger.LogInformation("GET: Comments?ticketId={ticketId}", ticketId);
+
             ViewData["TicketId"] = ticketId;
             ViewData["TicketTitle"] = _context.Tickets.Where(t => t.Id == ticketId).First().Title;
 
@@ -27,6 +31,8 @@ namespace Bug_Tracker.Controllers
         // GET: Comments/Create?ticketId=1
         public ActionResult Create(int ticketId)
         {
+            _logger.LogInformation("GET: Comments/Create?ticketId={ticketId}", ticketId);
+
             ViewData["TicketId"] = ticketId;
             return View();
         }
@@ -37,14 +43,21 @@ namespace Bug_Tracker.Controllers
         public ActionResult Create(int ticketId, [Bind("Text")] Comment comment)
         {
             ViewData["TicketId"] = ticketId;
-            try
+
+            ModelState.ClearValidationState("Ticket");
+            ModelState.MarkFieldValid("Ticket");
+            if(ModelState.IsValid)
             {
+                _logger.LogInformation("POST: Comments/Create (ticketId={ticketId})", ticketId);
+
                 _context.Tickets.Include(t => t.Comments).Where(t => t.Id == ticketId).First().Comments.Add(comment);
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index), new {ticketId = ticketId});
             }
-            catch
+            else
             {
+                _logger.LogInformation("POST: Comments/Create (ticketId={ticketId}) - model state invalid", ticketId);
+
                 return View();
             }
         }
@@ -52,6 +65,8 @@ namespace Bug_Tracker.Controllers
         // GET: Comments/Edit/1?ticketId=1
         public ActionResult Edit(int id, int ticketId)
         {
+            _logger.LogInformation("GET: Comments/Edit/{id}?ticketId={ticketId}", id, ticketId);
+
             ViewData["TicketId"] = ticketId;
 
             Comment comment = _context.Comments.Where(c => c.Id == id).First();
@@ -65,23 +80,33 @@ namespace Bug_Tracker.Controllers
         public ActionResult Edit(int id, int ticketId, [Bind("Text")] Comment comment)
         {
             ViewData["TicketId"] = ticketId;
-            try
+
+            ModelState.ClearValidationState("Ticket");
+            ModelState.MarkFieldValid("Ticket");
+            if (ModelState.IsValid)
             {
+                _logger.LogInformation("POST: Comments/Edit/{id} (ticketId={ticketId})", id, ticketId);
+
                 _context.Comments.Where(c => c.Id == id).First().Text = comment.Text;
                 _context.SaveChanges();
-                return RedirectToAction(nameof(Index), new {ticketId = ticketId});
+                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
             }
-            catch
+            else
             {
+                _logger.LogInformation("POST: Comments/Edit/{id} (ticketId={ticketId}) - model state invalid", id, ticketId);
+
                 return View();
             }
         }
 
+
         // GET: Comments/Delete/1?ticketId=1
         public ActionResult Delete(int id, int ticketId)
         {
+            _logger.LogInformation("GET: Comments/Delete/{id}?ticketId={ticketId}", id, ticketId);
+
             ViewData["TicketId"] = ticketId;
-            return View();
+            return View(_context.Comments.Where(c => c.Id == id).First());
         }
 
         // POST: Comments/Delete/1
@@ -89,17 +114,13 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, int ticketId, IFormCollection collection)
         {
+            _logger.LogInformation("POST: Comments/Delete/{id} (ticketId={ticketId})", id, ticketId);
+
             ViewData["TicketId"] = ticketId;
-            try
-            {
-                _context.Comments.Remove(_context.Comments.Where(c => c.Id == id).First());
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index), new {ticketId = ticketId});
-            }
-            catch
-            {
-                return View();
-            }
+
+            _context.Comments.Remove(_context.Comments.Where(c => c.Id == id).First());
+            _context.SaveChanges();
+            return RedirectToAction(nameof(Index), new { ticketId = ticketId });
         }
     }
 }

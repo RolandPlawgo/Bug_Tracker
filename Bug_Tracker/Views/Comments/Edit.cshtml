@@ -12,13 +12,15 @@
                 <input asp-for="Text" value="@Model?.Text" class="form-control" />
                 <span asp-validation-for="Text" class="text-danger"></span>
             </div>
+            <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
-
+<br />
+<br />
 <div>
-    <a asp-action="Index" asp-route-ticketId="@ViewData["TicketId"]">Back to List</a>
+    <a asp-action="Index" asp-route-ticketId="@ViewData["TicketId"]" class="btn btn-outline-secondary"><< Back</a>
 </div>
