@@ -4,6 +4,7 @@
 <br />
 <div>
     <p>@Html.DisplayFor(model => model.Text)</p>
+    <p>@Html.DisplayFor(model => model.Date)</p>
     <br />
     <form asp-action="Delete" asp-route-ticketId="@ViewData["TicketId"]">
         <input type="hidden" asp-for="Id" />

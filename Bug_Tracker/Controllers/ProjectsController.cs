@@ -1,32 +1,37 @@
 ﻿using Bug_Tracker.Data;
 using Bug_Tracker.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Bug_Tracker.Controllers
 {
     public class ProjectsController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILogger<ProjectsController> _logger;
-        public ProjectsController(ApplicationDbContext context, ILogger<ProjectsController> logger)
+        IGenericRepository<Project> _projectRepository;
+        public ProjectsController(IGenericRepository<Project> projectRepository, ILogger<ProjectsController> logger)
         {
-            _context = context;
             _logger = logger;
+            _projectRepository = projectRepository;
         }
 
         // GET: Projects
         public ActionResult Index()
         {
             _logger.LogInformation("GET: Projects");
-            return View(_context.Projects.ToList());
+            IEnumerable<Project> projects = _projectRepository.Get();
+            return View(projects);
         }
 
         // GET: Projects/Details/5
         public ActionResult Details(int id)
         {
             _logger.LogInformation("GET: Projects/Details/{id}", id);
-            return View(_context.Projects.Where(project => project.Id == id).First());
+            Project? project = _projectRepository.GetEntity(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            return View(project);
         }
 
         // GET: Projects/Create
@@ -47,8 +52,8 @@ namespace Bug_Tracker.Controllers
             if (ModelState.IsValid)
             {
                 _logger.LogInformation("POST: Projects/Create");
-                _context.Projects.Add(project);
-                _context.SaveChanges();
+                _projectRepository.Create(project);
+                _projectRepository.Save();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -63,7 +68,12 @@ namespace Bug_Tracker.Controllers
         public ActionResult Edit(int id)
         {
             _logger.LogInformation("GET: Projects/Edit/{id}", id);
-            return View(_context.Projects.Where(project => project.Id == id).First());
+            Project? project = _projectRepository.GetEntity(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            return View(project);
         }
 
         // POST: Projects/Edit/5
@@ -76,12 +86,22 @@ namespace Bug_Tracker.Controllers
             if (ModelState.IsValid)
             {
                 _logger.LogInformation("POST: Projects/Edit/{id}", id);
-                var projectToEdit = _context.Projects.Where(project => project.Id == id).First();
+                Project projectToEdit = _projectRepository.GetEntity(id)!;
                 projectToEdit.Title = project.Title;
                 projectToEdit.Description = project.Description;
-                _context.SaveChanges();
+                try
+                {
+                    _projectRepository.Edit(projectToEdit);
+                    _projectRepository.Save();
 
-                return RedirectToAction(nameof(Details), new {id });
+                    return RedirectToAction(nameof(Details), new { id = id });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("POST: Projects/Edit/{id} Exception {exception}", id, ex.Message);
+                    // TODO: Error page
+                    return RedirectToAction(nameof(Details), new { id = id });
+                }
             }
             else
             {
@@ -94,7 +114,12 @@ namespace Bug_Tracker.Controllers
         public ActionResult Delete(int id)
         {
             _logger.LogInformation("GET: Projects/Delete/{id}", id);
-            return View(_context.Projects.Where(project => project.Id == id).First());
+            Project? project = _projectRepository.GetEntity(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            return View(project);
         }
 
         // POST: Projects/Delete/5
@@ -102,18 +127,19 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
         {
+            _logger.LogInformation("POST: Projects/Delete/{id}", id);
             try
             {
-                _logger.LogInformation("POST: Projects/Delete/{id}", id);
-                _context.Projects.Remove(_context.Projects.Where(project => project.Id == id).First());
-                _context.SaveChanges();
+                _projectRepository.Delete(id);
+                _projectRepository.Save();
 
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                _logger.LogError("POST: Projects/Delete/{id} Exception {exception}", id, ex.Message);
-                return View();
+                _logger.LogError("POST: Projects/Delete/{id} - Exception: {exception}", id, ex.Message);
+                // TODO: Error page
+                return RedirectToAction(nameof(Details));
             }
         }
     }

@@ -69,7 +69,7 @@
     <thead>
         <tr>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["TitleSortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["TitleSortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]">
                     @Html.DisplayNameFor(model => model.Title)
                 </a>
             </th>
@@ -80,19 +80,20 @@
                 @Html.DisplayNameFor(model => model.Status)
             </th>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["PrioritySortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["PrioritySortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]">
                     @Html.DisplayNameFor(model => model.Priority)
                 </a>
             </th>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]">
                     @Html.DisplayNameFor(model => model.Date)
                 </a>
             </th>
             <th>
-                <a asp-action="Index" asp-route-projectFilter="@ViewData["ProjectFilter"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]">
+                @*<a asp-action="Index" asp-route-projectFilter="@ViewData["ProjectFilter"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]">
                     @Html.DisplayNameFor(model => model.Project)
-                </a>
+                </a>*@
+                @Html.DisplayNameFor(model => model.Project)
             </th>
             <th></th>
         </tr>
@@ -134,7 +135,9 @@
     }
     else
     {
-        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] - 1)" class="btn btn-light">Previous Page</a>
+        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] - 1)" class="btn btn-light" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"]>
+            Previous Page
+        </a>
     }
     &nbsp;
     @if((int)ViewData["CurrentPage"] == (int)ViewData["Pages"])
@@ -143,7 +146,9 @@
     }
     else
     {
-        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] + 1)" class="btn btn-light">Next Page</a>
+        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] + 1)" class="btn btn-light" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"]>
+            Next Page
+        </a>
     }
     &nbsp;
     &nbsp;

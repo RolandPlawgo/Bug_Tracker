@@ -3,16 +3,19 @@ using Bug_Tracker.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Bug_Tracker.Controllers
 {
     public class CommentsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        IGenericRepository<Comment> _commentRepository;
+        IGenericRepository<Ticket> _ticketRepository;
         private readonly ILogger<CommentsController> _logger;
-        public CommentsController(ApplicationDbContext context, ILogger<CommentsController> logger)
+        public CommentsController(IGenericRepository<Comment> commentRepository, IGenericRepository<Ticket> ticketRepository, ILogger<CommentsController> logger)
         {
-            _context = context;
+            _commentRepository = commentRepository;
+            _ticketRepository = ticketRepository;
             _logger = logger;
         }
 
@@ -22,10 +25,10 @@ namespace Bug_Tracker.Controllers
             _logger.LogInformation("GET: Comments?ticketId={ticketId}", ticketId);
 
             ViewData["TicketId"] = ticketId;
-            ViewData["TicketTitle"] = _context.Tickets.Where(t => t.Id == ticketId).First().Title;
+            ViewData["TicketTitle"] = _ticketRepository.GetEntity(ticketId)!.Title;
 
-            var comments = _context.Comments.Where(c => c.TicketId == ticketId);
-            return View(comments.ToList());
+            List<Comment> comments = _commentRepository.Get(filter: c => c.TicketId == ticketId).ToList();
+            return View(comments);
         }
 
         // GET: Comments/Create?ticketId=1
@@ -50,8 +53,10 @@ namespace Bug_Tracker.Controllers
             {
                 _logger.LogInformation("POST: Comments/Create (ticketId={ticketId})", ticketId);
 
-                _context.Tickets.Include(t => t.Comments).Where(t => t.Id == ticketId).First().Comments.Add(comment);
-                _context.SaveChanges();
+                comment.TicketId = ticketId;
+                comment.Date = DateTime.Now;
+                _commentRepository.Create(comment);
+                _commentRepository.Save();
                 return RedirectToAction(nameof(Index), new {ticketId = ticketId});
             }
             else
@@ -69,7 +74,11 @@ namespace Bug_Tracker.Controllers
 
             ViewData["TicketId"] = ticketId;
 
-            Comment comment = _context.Comments.Where(c => c.Id == id).First();
+            Comment? comment = _commentRepository.GetEntity(id);
+            if (comment == null)
+            {
+                return NotFound();
+            }
 
             return View(comment);
         }
@@ -87,9 +96,20 @@ namespace Bug_Tracker.Controllers
             {
                 _logger.LogInformation("POST: Comments/Edit/{id} (ticketId={ticketId})", id, ticketId);
 
-                _context.Comments.Where(c => c.Id == id).First().Text = comment.Text;
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
+                Comment commentToEdit = _commentRepository.GetEntity(id)!;
+                commentToEdit.Text = comment.Text;
+                try
+                {
+                    _commentRepository.Edit(commentToEdit);
+                    _commentRepository.Save();
+                    return RedirectToAction(nameof(Index), new { ticketId = ticketId });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("POST: Comments/Edit/{id} (ticketId={ticketId}) - Exception: {exception}", id, ticketId, ex.Message);
+                    // TODO: Error page
+                    return RedirectToAction(nameof(Index), new { ticketId = ticketId });
+                }
             }
             else
             {
@@ -106,7 +126,14 @@ namespace Bug_Tracker.Controllers
             _logger.LogInformation("GET: Comments/Delete/{id}?ticketId={ticketId}", id, ticketId);
 
             ViewData["TicketId"] = ticketId;
-            return View(_context.Comments.Where(c => c.Id == id).First());
+
+            Comment? comment = _commentRepository.GetEntity(id);
+            if (comment == null)
+            {
+                return NotFound();
+            }
+
+            return View();
         }
 
         // POST: Comments/Delete/1
@@ -118,9 +145,18 @@ namespace Bug_Tracker.Controllers
 
             ViewData["TicketId"] = ticketId;
 
-            _context.Comments.Remove(_context.Comments.Where(c => c.Id == id).First());
-            _context.SaveChanges();
-            return RedirectToAction(nameof(Index), new { ticketId = ticketId });
+            try
+            {
+                _commentRepository.Delete(id);
+                _commentRepository.Save();
+                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("POST: Comments/Delete/{id} - Exception: {exception}", id, ex.Message);
+                // TODO: Error page
+                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿@model List<Bug_Tracker.Models.Project>
+﻿@model IEnumerable<Bug_Tracker.Models.Project>
 @{
     ViewData["Title"] = "Index";
 }
@@ -11,7 +11,7 @@
 <br />
 
 
-<div class="row row-cols-1 row-cols-md-3">
+<div class="row row-cols-1 row-cols-md-3 gy-3">
     @foreach(var item in Model)
     {
         <div class="col">

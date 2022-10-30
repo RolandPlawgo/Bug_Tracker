@@ -1,18 +1,20 @@
 ﻿using Bug_Tracker.Data;
 using Bug_Tracker.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Bug_Tracker.Controllers
 {
     public class TicketsController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILogger<TicketsController> _logger;
-        public TicketsController(ApplicationDbContext context, ILogger<TicketsController> logger)
+        private readonly IGenericRepository<Ticket> _ticketRepository;
+        private readonly IGenericRepository<Project> _projectRepository;
+        public TicketsController(IGenericRepository<Ticket> ticketRepository, IGenericRepository<Project> projectRepository, ILogger<TicketsController> logger)
         {
-            _context = context;
             _logger = logger;
+            _ticketRepository = ticketRepository;
+            _projectRepository = projectRepository;
         }
 
         // GET: Tickets
@@ -34,63 +36,63 @@ namespace Bug_Tracker.Controllers
             ViewData["PriorityFilter"] = priorityFilter;
             ViewData["ProjectFilter"] = projectFilter;
 
-            List<string> projectTitles = new List<string>();
-            foreach (var project in _context.Projects)
-            {
-                projectTitles.Add(project.Title);
-            }
-            ViewData["Projects"] = projectTitles;
+            ViewData["Projects"] = GetProjectTitles();
 
-            var tickets = from s in _context.Tickets.Include(t => t.Project)
-                          select s;
-            
+
+            string includeProperties = "";
+            List<Expression<Func<Ticket, bool>>> filters = new List<Expression<Func<Ticket, bool>>>();
+            Func<IQueryable<Ticket>, IOrderedQueryable<Ticket>>? orderBy = null;
+
+            includeProperties = "Project";
+
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                tickets = tickets.Where(t => t.Title.ToLower().Contains(searchString.ToLower())
-                                          || t.ShortDescription.ToLower().Contains(searchString.ToLower())
-                                          || t.Project.Title.ToLower().Contains(searchString.ToLower()));
+                filters.Add((t => t.Title.ToLower().Contains(searchString.ToLower())
+                               || t.ShortDescription.ToLower().Contains(searchString.ToLower())));
             }
 
             if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "any")
             {
-                tickets = tickets.Where(t => t.Status == (Status)Enum.Parse(typeof(Status), statusFilter));
+                filters.Add((t => t.Status == (Status)Enum.Parse(typeof(Status), statusFilter)));
             }
 
             if (!string.IsNullOrEmpty(priorityFilter) && priorityFilter != "any")
             {
-                tickets = tickets.Where(t => t.Priority == (Priority)Enum.Parse(typeof(Priority), priorityFilter));
+                filters.Add((t => t.Priority == (Priority)Enum.Parse(typeof(Priority), priorityFilter)));
             }
 
             if (!string.IsNullOrEmpty(projectFilter) && projectFilter != "any")
             {
-                tickets = tickets.Where(t => t.Project.Title == projectFilter);
+                filters.Add(t => t.Project.Title == projectFilter);
             }
 
             switch (sortOrder)
             {
                 case "title_asc":
-                    tickets = tickets.OrderBy(t => t.Title);
+                    orderBy = (tickets => tickets.OrderBy(t => t.Title));
                     break;
                 case "title_desc":
-                    tickets = tickets.OrderByDescending(t => t.Title);
+                    orderBy = (tickets => tickets.OrderByDescending(t => t.Title));
                     break;
                 case "priority_asc":
-                    tickets = tickets.OrderBy(t => t.Priority);
+                    orderBy = (tickets => tickets.OrderBy(t => t.Priority));
                     break;
                 case "priority_desc":
-                    tickets = tickets.OrderByDescending(t => t.Priority);
+                    orderBy = (tickets => tickets.OrderByDescending(t => t.Priority));
                     break;
                 case "date_asc":
-                    tickets = tickets.OrderBy(t => t.Date);
+                    orderBy = (tickets => tickets.OrderBy(t => t.Date));
                     break;
                 default:
-                    tickets = tickets.OrderByDescending(t => t.Date);
+                    orderBy = (tickets => tickets.OrderByDescending(t => t.Date));
                     break;
             }
 
-            ViewData["Pages"] = (int)Math.Ceiling((decimal)tickets.Count() / (decimal)elementsOnPage);
 
-            List<Ticket> ticketsToDisplay = tickets.Skip((page - 1) * elementsOnPage).Take(elementsOnPage).ToList();
+            int pages = 0;
+            var ticketsToDisplay = _ticketRepository.Get(page, elementsOnPage, out pages, includeProperties, filters, orderBy);
+
+            ViewData["Pages"] = pages;
 
             return View(ticketsToDisplay);
         }
@@ -100,10 +102,7 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Tickets/Create");
 
-            List<string> projectTitles = (from p in _context.Projects 
-                                          select p.Title)
-                                          .ToList();
-            ViewData["ProjectTitles"] = projectTitles;
+            ViewData["ProjectTitles"] = GetProjectTitles();
             return View();
         }
 
@@ -112,16 +111,17 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind("Title,ShortDescription,LongDescription,Status,Priority")] Ticket ticket, string projectTitle)
         {
-            List<string> projectTitles = (from p in _context.Projects
-                                          select p.Title)
-                                          .ToList();
-            ViewData["ProjectTitles"] = projectTitles;
+            ViewData["ProjectTitles"] = GetProjectTitles();
 
             ticket.Date = DateTime.Now;
             ticket.Comments = new List<Comment>();
 
-            var project = _context.Projects.Include(p => p.Tickets).Where(p => p.Title == projectTitle).First();
-            //ticket.Project = project;
+            Project? project = _projectRepository.GetEntity(p => p.Title == projectTitle);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            ticket.ProjectId = project.Id;
 
             ModelState.ClearValidationState("Comments");
             ModelState.MarkFieldValid("Comments");
@@ -131,8 +131,8 @@ namespace Bug_Tracker.Controllers
             {
                 _logger.LogInformation("POST: Tickets/Create");
 
-                project.Tickets.Add(ticket);
-                _context.SaveChanges();
+                _ticketRepository.Create(ticket);
+                _ticketRepository.Save();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -149,7 +149,11 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Tickets/Details/{id}", id);
 
-            Ticket ticket = _context.Tickets.Include(t => t.Project).Where(t => t.Id == id).First();
+            Ticket? ticket = _ticketRepository.GetEntity(t => t.Id == id, "Project");
+            if (ticket == null)
+            {
+                NotFound();
+            }
             return View(ticket);
         }
 
@@ -158,12 +162,14 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Tickets/Edit/{id}", id);
 
-            List<string> projectTitles = (from p in _context.Projects
-                                          select p.Title)
-                                          .ToList();
+            var projectTitles = GetProjectTitles();
             ViewData["ProjectTitles"] = projectTitles;
 
-            Ticket ticket = _context.Tickets.Include(t => t.Project).Where(t => t.Id == id).First();
+            Ticket? ticket = _ticketRepository.GetEntity(t => t.Id == id, "Project");
+            if (ticket == null)
+            {
+                return NotFound();
+            }
             return View(ticket);
         }
 
@@ -172,14 +178,19 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, [Bind("Title,ShortDescription,LongDescription,Status,Priority")] Ticket ticket, string projectTitle)
         {
-            var ticketToEdit = _context.Tickets.Include(t => t.Project).Where(t => t.Id == id).First();
+            var ticketToEdit = _ticketRepository.GetEntity(id)!;
             ticketToEdit.Title = ticket.Title;
             ticketToEdit.ShortDescription = ticket.ShortDescription;
             ticketToEdit.LongDescription = ticket.LongDescription;
             ticketToEdit.Status = ticket.Status;
             ticketToEdit.Priority = ticket.Priority;
-            ticketToEdit.Project = _context.Projects.Where(p => p.Title == projectTitle).First();
-            ticketToEdit.ProjectId = ticketToEdit.Project.Id;
+            Project? project = _projectRepository.GetEntity(p => p.Title == projectTitle);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            ticketToEdit.Project = project;
+            ticketToEdit.ProjectId = project.Id;
 
             ModelState.ClearValidationState("Comments");
             ModelState.MarkFieldValid("Comments");
@@ -188,18 +199,25 @@ namespace Bug_Tracker.Controllers
             if (ModelState.IsValid)
             {
                 _logger.LogInformation("POST: Tickets/Edit/{id}", id);
+                try
+                {
+                    _ticketRepository.Edit(ticketToEdit);
+                    _ticketRepository.Save();
 
-                _context.SaveChanges();
-
-                return RedirectToAction(nameof(Details), new { id = id });
+                    return RedirectToAction(nameof(Details), new { id = id });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("POST: Tickets/Edit/{id} - Exception: {exception}", id, ex.Message);
+                    // TODO: Error page
+                    return RedirectToAction(nameof(Details), new { id = id });
+                }
             }
             else
             {
                 _logger.LogInformation("POST: Tickets/Edit/{id} - model state invalid", id);
 
-                List<string> projectTitles = (from p in _context.Projects
-                                              select p.Title)
-                                          .ToList();
+                List<string> projectTitles = GetProjectTitles();
                 ViewData["ProjectTitles"] = projectTitles;
                 
                 return View(ticketToEdit);
@@ -211,7 +229,11 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Tickets/Delete/{id}", id);
 
-            Ticket ticket = _context.Tickets.Include(t => t.Project).Where(t => t.Id == id).First();
+            Ticket? ticket = _ticketRepository.GetEntity(t => t.Id == id, "Project");
+            if (ticket == null)
+            {
+                return NotFound();
+            }
             return View(ticket);
         }
 
@@ -222,9 +244,26 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("POST: Tickets/Delete/{id}", id);
 
-            _context.Tickets.Remove(_context.Tickets.Where(t => t.Id == id).First());
-            _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _ticketRepository.Delete(id);
+                _ticketRepository.Save();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("POST: Tickets/Delete/{id} - Exception: {exception}", id, ex.Message);
+                // TODO: Error page
+                return RedirectToAction(nameof(Details), new {id = id});
+            }
+        }
+
+
+        public List<string> GetProjectTitles()
+        {
+            return (from p in _projectRepository.Get()
+                    select p.Title)
+                    .ToList();
         }
     }
 }
