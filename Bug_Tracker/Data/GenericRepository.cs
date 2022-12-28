@@ -47,8 +47,6 @@ namespace Bug_Tracker.Data
             List<Expression<Func<TEntity, bool>>>? filters = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
-            //TODO: fix filtering and paging
-
             IQueryable<TEntity> entities = dbSet;
 
             if (includeProperties != "")
@@ -79,6 +77,16 @@ namespace Bug_Tracker.Data
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
+            if (page <= 0)
+            {
+                throw new ArgumentException("Number of pages cannot be lower or equal to 0");
+            }
+            if (elementsOnPage <= 0)
+            {
+                throw new ArgumentException("Number elements in page cannot lower or equal to 0");
+            }
+
+
             IQueryable<TEntity> entities = dbSet;
 
             if (includeProperties != "")
@@ -98,7 +106,7 @@ namespace Bug_Tracker.Data
 
             pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
 
-            entities.Skip((page - 1) * elementsOnPage).Take(elementsOnPage);
+            entities = entities.Skip((page - 1) * elementsOnPage).Take(elementsOnPage);
 
             return entities;
         }
@@ -110,6 +118,15 @@ namespace Bug_Tracker.Data
             List<Expression<Func<TEntity, bool>>>? filters = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
+            if (page <= 0)
+            {
+                throw new ArgumentException("Number of pages cannot be lower or equal to 0");
+            }
+            if (elementsOnPage <= 0)
+            {
+                throw new ArgumentException("Number of elements on page cannot lower or equal to 0");
+            }
+
 
             IQueryable<TEntity> entities = dbSet;
 
@@ -132,6 +149,10 @@ namespace Bug_Tracker.Data
             }
 
             pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
+            if (page > pages)
+            {
+                throw new ArgumentException("Page does not exist");
+            }
 
             entities = entities.Skip((page - 1) * elementsOnPage).Take(elementsOnPage);
 
@@ -142,7 +163,7 @@ namespace Bug_Tracker.Data
         {
             return dbSet.Find(id);
         }
-        public TEntity? GetEntity(Expression<Func<TEntity, bool>> filter, string includeProperties = "")
+        public TEntity? GetEntity(Expression<Func<TEntity, bool>>? filter, string includeProperties = "")
         {
             IQueryable<TEntity> entities = dbSet;
 
@@ -154,10 +175,6 @@ namespace Bug_Tracker.Data
             if (filter != null)
             {
                 entities = entities.Where(filter);
-            }
-            else
-            {
-                throw new ArgumentNullException();
             }
 
             return entities.FirstOrDefault();

@@ -90,11 +90,19 @@ namespace Bug_Tracker.Controllers
 
 
             int pages = 0;
-            var ticketsToDisplay = _ticketRepository.Get(page, elementsOnPage, out pages, includeProperties, filters, orderBy);
+            try
+            {
+                var ticketsToDisplay = _ticketRepository.Get(page, elementsOnPage, out pages, includeProperties, filters, orderBy);
 
-            ViewData["Pages"] = pages;
+                ViewData["Pages"] = pages;
 
-            return View(ticketsToDisplay);
+                return View(ticketsToDisplay);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("GET: Tickets/Index - Page not found - Exception message: {message}", ex.Message);
+                return RedirectToAction("Index");
+            }
         }
 
         // GET: Tickets/Create
@@ -152,7 +160,7 @@ namespace Bug_Tracker.Controllers
             Ticket? ticket = _ticketRepository.GetEntity(t => t.Id == id, "Project");
             if (ticket == null)
             {
-                NotFound();
+                return NotFound();
             }
             return View(ticket);
         }
@@ -178,7 +186,11 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, [Bind("Title,ShortDescription,LongDescription,Status,Priority")] Ticket ticket, string projectTitle)
         {
-            var ticketToEdit = _ticketRepository.GetEntity(id)!;
+            var ticketToEdit = _ticketRepository.GetEntity(id);
+            if (ticketToEdit == null)
+            {
+                return NotFound();
+            }
             ticketToEdit.Title = ticket.Title;
             ticketToEdit.ShortDescription = ticket.ShortDescription;
             ticketToEdit.LongDescription = ticket.LongDescription;

@@ -117,6 +117,7 @@ namespace Bug_Tracker.Controllers
             Project? project = _projectRepository.GetEntity(id);
             if (project == null)
             {
+                _logger.LogInformation("GET: Projects/Delete/{id} - Project doesn't exist", id);
                 return NotFound();
             }
             return View(project);

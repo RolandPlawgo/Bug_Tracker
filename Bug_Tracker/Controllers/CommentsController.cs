@@ -24,6 +24,11 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Comments?ticketId={ticketId}", ticketId);
 
+            if (_ticketRepository.GetEntity(ticketId) == null)
+            {
+                return NotFound();
+            }
+
             ViewData["TicketId"] = ticketId;
             ViewData["TicketTitle"] = _ticketRepository.GetEntity(ticketId)!.Title;
 
@@ -36,6 +41,11 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Comments/Create?ticketId={ticketId}", ticketId);
 
+            if (_ticketRepository.GetEntity(ticketId) == null)
+            {
+                return NotFound();
+            }
+
             ViewData["TicketId"] = ticketId;
             return View();
         }
@@ -45,6 +55,11 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(int ticketId, [Bind("Text")] Comment comment)
         {
+            if (_ticketRepository.GetEntity(ticketId) == null)
+            {
+                return NotFound();
+            }
+
             ViewData["TicketId"] = ticketId;
 
             ModelState.ClearValidationState("Ticket");
@@ -72,6 +87,11 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Comments/Edit/{id}?ticketId={ticketId}", id, ticketId);
 
+            if (_ticketRepository.GetEntity(ticketId) == null)
+            {
+                return NotFound();
+            }
+
             ViewData["TicketId"] = ticketId;
 
             Comment? comment = _commentRepository.GetEntity(id);
@@ -88,6 +108,11 @@ namespace Bug_Tracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, int ticketId, [Bind("Text")] Comment comment)
         {
+            if (_ticketRepository.GetEntity(ticketId) == null)
+            {
+                return NotFound();
+            }
+
             ViewData["TicketId"] = ticketId;
 
             ModelState.ClearValidationState("Ticket");
@@ -96,7 +121,11 @@ namespace Bug_Tracker.Controllers
             {
                 _logger.LogInformation("POST: Comments/Edit/{id} (ticketId={ticketId})", id, ticketId);
 
-                Comment commentToEdit = _commentRepository.GetEntity(id)!;
+                Comment? commentToEdit = _commentRepository.GetEntity(id);
+                if (commentToEdit == null)
+                {
+                    return NotFound();
+                }
                 commentToEdit.Text = comment.Text;
                 try
                 {
@@ -125,6 +154,11 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Comments/Delete/{id}?ticketId={ticketId}", id, ticketId);
 
+            if (_ticketRepository.GetEntity(ticketId) == null)
+            {
+                return NotFound();
+            }
+
             ViewData["TicketId"] = ticketId;
 
             Comment? comment = _commentRepository.GetEntity(id);
@@ -142,6 +176,15 @@ namespace Bug_Tracker.Controllers
         public ActionResult Delete(int id, int ticketId, IFormCollection collection)
         {
             _logger.LogInformation("POST: Comments/Delete/{id} (ticketId={ticketId})", id, ticketId);
+
+            if (_ticketRepository.GetEntity(ticketId) == null)
+            {
+                return NotFound();
+            }
+            if (_commentRepository.GetEntity(id) == null)
+            {
+                return NotFound();
+            }
 
             ViewData["TicketId"] = ticketId;
 
