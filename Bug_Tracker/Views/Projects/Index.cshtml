@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Bug_Tracker.Models.Project>
+﻿@using Bug_Tracker.Authorization
+@model IEnumerable<Bug_Tracker.Models.Project>
 @{
     ViewData["Title"] = "Index";
 }
@@ -6,7 +7,10 @@
 <h2>Projects</h2>
 <br />
 <div>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
+    @if (User.IsInRole(Constants.ManagersRole) || User.IsInRole(Constants.AdministratorsRole))
+    {
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    }
 </div>
 <br />
 

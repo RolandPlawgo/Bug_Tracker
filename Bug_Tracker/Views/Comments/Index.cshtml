@@ -1,4 +1,9 @@
-﻿@model IEnumerable<Bug_Tracker.Models.Comment>
+﻿@using Bug_Tracker.Authorization
+@using Microsoft.AspNetCore.Authorization
+
+@inject IAuthorizationService _authorizationService
+
+@model IEnumerable<Bug_Tracker.Models.Comment>
 
 <h2>@ViewData["TicketTitle"]</h2>
 <br />
@@ -30,8 +35,15 @@
                 @Html.DisplayFor(modelItem => item.Date)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-ticketId="@ViewData["TicketId"]">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-ticketId="@ViewData["TicketId"]">Delete</a>
+                @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Update)).Succeeded)
+                {
+                    <a asp-action="Edit" asp-route-id="@item.Id" asp-route-ticketId="@ViewData["TicketId"]">Edit</a>
+                }
+                &nbsp;
+                @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Delete)).Succeeded)
+                {
+                    <a asp-action="Delete" asp-route-id="@item.Id" asp-route-ticketId="@ViewData["TicketId"]">Delete</a>
+                }
             </td>
         </tr>
 }

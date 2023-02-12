@@ -7,6 +7,7 @@ namespace Bug_Tracker.Models
     public class Ticket
     {
         public int Id { get; set; }
+        public string OwnerId { get; set; }
         public string Title { get; set; }
         [DisplayName("Description")]
         public string ShortDescription { get; set; }

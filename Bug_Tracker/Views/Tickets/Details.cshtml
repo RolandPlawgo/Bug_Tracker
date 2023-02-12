@@ -1,4 +1,9 @@
-﻿@model Bug_Tracker.Models.Ticket
+﻿@using Microsoft.AspNetCore.Authorization
+@using Bug_Tracker.Authorization
+
+@inject IAuthorizationService _authorizationService
+
+@model Bug_Tracker.Models.Ticket
 
 <div>
     <h1>@Html.DisplayFor(model => model.Title)</h1>
@@ -41,8 +46,15 @@
 <br/>
 <br />
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-primary">Edit</a> &nbsp;
-    <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-outline-danger">Delete</a>  
+    @if ((await _authorizationService.AuthorizeAsync(User, Model, TicketOperationAuthorizationRequirements.Update)).Succeeded)
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-primary">Edit</a>
+    }
+    &nbsp;
+    @if ((await _authorizationService.AuthorizeAsync(User, Model, TicketOperationAuthorizationRequirements.Delete)).Succeeded)
+    {
+        <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-outline-danger">Delete</a>
+    }
 </div>
 <br />
 <div>

@@ -11,8 +11,9 @@ using Bug_Tracker.Models;
 using Xunit.Sdk;
 using System.Net.Http.Headers;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
-namespace Bug_Tracker_Tests
+namespace Bug_Tracker_Tests.Data
 {
     public class GenericRepositoryTest : IClassFixture<TestDatabaseFixture>
     {
@@ -24,87 +25,55 @@ namespace Bug_Tracker_Tests
 
         #region Get tests
         [Fact]
-        public void Get_EntityNotNull()
+        public async Task GetAsync_EntityNotNull()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = projectRepository.Get();
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync();
 
                 Assert.NotNull(allProjects);
             }
         }
 
         [Fact]
-        public void Get_ReturnsExpectedEntities()
+        public async Task GetAsync_ReturnsExpectedEntities()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = projectRepository.Get();
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync();
 
                 Assert.Equal("Project 1 title", allProjects.First().Title);
                 Assert.Equal("Project 1 description", allProjects.First().Description);
+                Assert.Equal("11111", allProjects.First().OwnerId);
                 Assert.Equal(3, allProjects.Count());
             }
         }
 
         [Fact]
-        public void Get_IncludedPropertiesNotNull()
+        public async Task GetAsync_IncludedPropertiesNotNull()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = projectRepository.Get(includeProperties: "Tickets", filter: null);
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: "Tickets", filter: null);
 
                 Assert.All(allProjects, item => Assert.NotNull(item));
             }
         }
 
         [Fact]
-        public void Get_ReturnsIncludedProperties()
+        public async Task GetAsync_ReturnsIncludedProperties()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = projectRepository.Get(includeProperties: "Tickets", filter: null);
-
-                Assert.Equal("Short description 1", allProjects.First().Tickets.First().ShortDescription);
-                Assert.Equal("Long description of ticket 1", allProjects.First().Tickets.First().LongDescription);
-                Assert.True(DateTime.Equals(new DateTime(2020, 1, 1), allProjects.First().Tickets.First().Date));
-                Assert.Equal(Status.feature , allProjects.First().Tickets.First().Status);
-                Assert.Equal(Priority.medium, allProjects.First().Tickets.First().Priority);
-            }
-        }
-
-        [Fact]
-        public void Get_IncludedPropertiesNotNullInOverloadWithMultipleFilters()
-        {
-            using (var context = Fixture.CreateContext())
-            {
-                GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
-
-                IEnumerable<Project> allProjects = projectRepository.Get(includeProperties: "Tickets", filter: null);
-
-                foreach (Project project in allProjects)
-                {
-                    Assert.NotNull(project.Tickets);
-                }
-            }
-        }
-
-        [Fact]
-        public void Get_ReturnsIncludedPropertiesInOverloadWithMultipleFilters()
-        {
-            using (var context = Fixture.CreateContext())
-            {
-                GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
-
-                IEnumerable<Project> allProjects = projectRepository.Get(includeProperties: "Tickets", filters: null);
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: "Tickets", filter: null);
 
                 Assert.Equal("Short description 1", allProjects.First().Tickets.First().ShortDescription);
                 Assert.Equal("Long description of ticket 1", allProjects.First().Tickets.First().LongDescription);
@@ -115,15 +84,48 @@ namespace Bug_Tracker_Tests
         }
 
         [Fact]
-        public void Get_ReturnsFilteredEntities()
+        public async Task GetAsync_IncludedPropertiesNotNull_InOverloadWithMultipleFilters()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = projectRepository.Get(filter: t => t.Title.Contains("title"));
-                IEnumerable<Project> oneProject = projectRepository.Get(filter: t => t.Title.Contains("3"));
-                IEnumerable<Project> noProjects = projectRepository.Get(filter: t => t.Title.Contains("!"));
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: "Tickets", filter: null);
+
+                foreach (Project project in allProjects)
+                {
+                    Assert.NotNull(project.Tickets);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task GetAsync_ReturnsIncludedProperties_InOverloadWithMultipleFilters()
+        {
+            using (var context = Fixture.CreateContext())
+            {
+                GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
+
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: "Tickets", filters: null);
+
+                Assert.Equal("Short description 1", allProjects.First().Tickets.First().ShortDescription);
+                Assert.Equal("Long description of ticket 1", allProjects.First().Tickets.First().LongDescription);
+                Assert.True(DateTime.Equals(new DateTime(2020, 1, 1), allProjects.First().Tickets.First().Date));
+                Assert.Equal(Status.feature, allProjects.First().Tickets.First().Status);
+                Assert.Equal(Priority.medium, allProjects.First().Tickets.First().Priority);
+            }
+        }
+
+        [Fact]
+        public async Task GetAsync_ReturnsFilteredEntities()
+        {
+            using (var context = Fixture.CreateContext())
+            {
+                GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
+
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(filter: t => t.Title.Contains("title"));
+                IEnumerable<Project> oneProject = await projectRepository.GetAsync(filter: t => t.Title.Contains("3"));
+                IEnumerable<Project> noProjects = await projectRepository.GetAsync(filter: t => t.Title.Contains("!"));
 
                 Assert.True(allProjects.Count() == 3);
                 Assert.True(oneProject.Count() == 1);
@@ -131,15 +133,15 @@ namespace Bug_Tracker_Tests
             }
         }
         [Fact]
-        public void Get_ReturnsFilteredEntitiesWithMultipleFilters()
+        public async Task GetAsync_ReturnsFilteredEntitiesWithMultipleFilters()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = projectRepository.Get(filters: new List<Expression<Func<Project, bool>>>() { t => t.Title.Contains("title"), t => t.Description.Contains("description") });
-                IEnumerable<Project> oneProject = projectRepository.Get(filters: new List<Expression<Func<Project, bool>>>() { t => t.Title.Contains("title"), t => t.Description.Contains("1") });
-                IEnumerable<Project> noProjects = projectRepository.Get(filters: new List<Expression<Func<Project, bool>>>() { t => t.Title.Contains("title"), t => t.Description.Contains("!") });
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(filters: new List<Expression<Func<Project, bool>>>() { t => t.Title.Contains("title"), t => t.Description.Contains("description") });
+                IEnumerable<Project> oneProject = await projectRepository.GetAsync(filters: new List<Expression<Func<Project, bool>>>() { t => t.Title.Contains("title"), t => t.Description.Contains("1") });
+                IEnumerable<Project> noProjects = await projectRepository.GetAsync(filters: new List<Expression<Func<Project, bool>>>() { t => t.Title.Contains("title"), t => t.Description.Contains("!") });
 
                 Assert.True(allProjects.Count() == 3);
                 Assert.True(oneProject.Count() == 1);
@@ -148,13 +150,13 @@ namespace Bug_Tracker_Tests
         }
 
         [Fact]
-        public void Get_ReturnOrderedEntities()
+        public async Task GetAsync_ReturnOrderedEntities()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> projectOrderedByTitleDescending = projectRepository.Get(orderBy: project => project.OrderByDescending(p => p.Title), filter: null);
+                IEnumerable<Project> projectOrderedByTitleDescending = await projectRepository.GetAsync(orderBy: project => project.OrderByDescending(p => p.Title), filter: null);
 
                 Assert.Collection(projectOrderedByTitleDescending,
                     item => Assert.Equal("Project 3 title", item.Title),
@@ -164,13 +166,13 @@ namespace Bug_Tracker_Tests
         }
 
         [Fact]
-        public void Get_ReturnOrderedEntitiesInOverloadWithMultipleFilters()
+        public async Task GetAsync_ReturnOrderedEntities_InOverloadWithMultipleFilters()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> projectOrderedByTitleDescending = projectRepository.Get(orderBy: project => project.OrderByDescending(p => p.Title), filters: null);
+                IEnumerable<Project> projectOrderedByTitleDescending = await projectRepository.GetAsync(orderBy: project => project.OrderByDescending(p => p.Title), filters: null);
 
                 Assert.Collection(projectOrderedByTitleDescending,
                     item => Assert.Equal("Project 3 title", item.Title),
@@ -180,56 +182,51 @@ namespace Bug_Tracker_Tests
         }
 
         [Fact]
-        public void Get_ReturnsPagedEntities()
+        public async Task GetAsync_ReturnsPagedEntities()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> projectsOnOnePage = projectRepository.Get(1, 3, out int pages, filter: null);
-                IEnumerable<Project> projectsOnTwoPages = projectRepository.Get(2, 2, out int pages2, filter: null);
-                IEnumerable<Project> projectsOnThreePages = projectRepository.Get(3, 1, out int pages3, filter: null);
+                IEnumerable<Project> projectsOnOnePage = await projectRepository.GetAsync(1, 3, filter: null);
+                IEnumerable<Project> projectsOnTwoPages = await projectRepository.GetAsync(2, 2, filter: null);
+                IEnumerable<Project> projectsOnThreePages = await projectRepository.GetAsync(3, 1, filter: null);
 
-                Assert.Equal(1, pages);
-                Assert.Equal(2, pages2);
-                Assert.Equal(3, pages3);
                 Assert.True(projectsOnOnePage.Count() == 3);
                 Assert.True(projectsOnTwoPages.Count() == 1);
                 Assert.True(projectsOnThreePages.Count() == 1);
             }
         }
         [Fact]
-        public void Get_ReturnsPagedEntitiesInOverloadWithMultipleFilters()
+        public async Task GetAsync_ReturnsPagedEntities_InOverloadWithMultipleFilters()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> projectsOnOnePage = projectRepository.Get(1, 3, out int pages, filters: null);
-                IEnumerable<Project> projectsOnTwoPages = projectRepository.Get(2, 2, out int pages2, filters: null);
-                IEnumerable<Project> projectsOnThreePages = projectRepository.Get(3, 1, out int pages3, filters: null);
+                IEnumerable<Project> projectsOnOnePage = await projectRepository.GetAsync(1, 3, filters: null);
+                IEnumerable<Project> projectsOnTwoPages = await projectRepository.GetAsync(2, 2, filters: null);
+                IEnumerable<Project> projectsOnThreePages = await projectRepository.GetAsync(3, 1, filters: null);
 
-                Assert.Equal(1, pages);
-                Assert.Equal(2, pages2);
-                Assert.Equal(3, pages3);
                 Assert.True(projectsOnOnePage.Count() == 3);
                 Assert.True(projectsOnTwoPages.Count() == 1);
                 Assert.True(projectsOnThreePages.Count() == 1);
             }
         }
-
         #endregion
 
+
+        #region GetEntity tests
         [Fact]
-        public void GetEntity_ReturnsTheRightEntity()
+        public async Task GetEntityAsync_ReturnsTheRightEntity()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project? project1 = projectRepository.GetEntity(1);
-                Project? project2 = projectRepository.GetEntity(2);
-                Project? project3 = projectRepository.GetEntity(3);
+                Project? project1 = await projectRepository.GetEntityAsync(1);
+                Project? project2 = await projectRepository.GetEntityAsync(2);
+                Project? project3 = await projectRepository.GetEntityAsync(3);
 
                 Assert.Equal("Project 1 title", project1!.Title);
                 Assert.Equal("Project 2 title", project2!.Title);
@@ -238,27 +235,27 @@ namespace Bug_Tracker_Tests
         }
 
         [Fact]
-        public void GetEntity_ReturnsNullIfEntityDoesntExist()
+        public async Task GetEntityAsync_ReturnsNullIfEntityDoesntExist()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project? project = projectRepository.GetEntity(10);
+                Project? project = await projectRepository.GetEntityAsync(10);
 
                 Assert.Null(project);
             }
         }
 
         [Fact]
-        public void GetEntity_ReturnsFilteredEntity()
+        public async Task GetEntityAsync_ReturnsFilteredEntity()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project? project1 = projectRepository.GetEntity(filter: t => t.Title.Contains("title"));
-                Project? project3 = projectRepository.GetEntity(filter: t => t.Title.Contains("3"));
+                Project? project1 = await projectRepository.GetEntityAsync(filter: t => t.Title.Contains("title"));
+                Project? project3 = await projectRepository.GetEntityAsync(filter: t => t.Title.Contains("3"));
 
                 Assert.Equal("Project 1 title", project1!.Title);
                 Assert.Equal("Project 3 title", project3!.Title);
@@ -266,39 +263,39 @@ namespace Bug_Tracker_Tests
         }
 
         [Fact]
-        public void GetEntity_ReturnsNullIfNoEntityMatchesFilter()
+        public async Task GetEntityAsync_ReturnsNullIfNoEntityMatchesFilter()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project? notExistingProject = projectRepository.GetEntity(filter: t => t.Title.Contains("!"));
+                Project? notExistingProject = await projectRepository.GetEntityAsync(filter: t => t.Title.Contains("!"));
 
                 Assert.Null(notExistingProject);
             }
         }
 
         [Fact]
-        public void GetEntity_IncludedPropertyNotNull()
+        public async Task GetEntityAsync_IncludedPropertyNotNull()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project? project = projectRepository.GetEntity(null, "Tickets");
+                Project? project = await projectRepository.GetEntityAsync(null, "Tickets");
 
                 Assert.NotNull(project!.Tickets);
             }
         }
 
         [Fact]
-        public void GetEntity_ReturnsIncludedProperties()
+        public async Task GetEntityAsync_ReturnsIncludedProperties()
         {
             using (var context = Fixture.CreateContext())
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project? project = projectRepository.GetEntity(null, "Tickets");
+                Project? project = await projectRepository.GetEntityAsync(null, "Tickets");
 
                 Assert.Equal("Short description 1", project!.Tickets.First().ShortDescription);
                 Assert.Equal("Long description of ticket 1", project.Tickets.First().LongDescription);
@@ -307,20 +304,19 @@ namespace Bug_Tracker_Tests
                 Assert.Equal(Priority.medium, project.Tickets.First().Priority);
             }
         }
-
-
+        #endregion
 
 
         [Fact]
-        public void Create_AddsEntitiesToTheDatabase()
+        public async Task CreateAsync_AddsEntitiesToTheDatabase()
         {
             using (var context = Fixture.CreateContext())
             {
                 context.Database.BeginTransaction();
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project newProject = new Project() { Title = "Project 4 title", Description = "Project 4 description", Tickets = new List<Ticket>() };
-                projectRepository.Create(newProject);
+                Project newProject = new Project() { Title = "Project 4 title", Description = "Project 4 description", OwnerId = "22222", Tickets = new List<Ticket>() };
+                await projectRepository.CreateAsync(newProject);
                 context.SaveChanges();
 
                 context.ChangeTracker.Clear();
@@ -330,18 +326,17 @@ namespace Bug_Tracker_Tests
         }
 
 
-
         [Fact]
-        public void Edit_UpdatesEntities()
+        public async Task EditAsync_UpdatesEntities()
         {
             using (var context = Fixture.CreateContext())
             {
                 context.Database.BeginTransaction();
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project project = projectRepository.GetEntity(1)!;
+                Project project = await projectRepository.GetEntityAsync(1)!;
                 project.Title = "Edited project title";
-                projectRepository.Edit(project);
+                await projectRepository.EditAsync(project);
                 context.SaveChanges();
 
                 context.ChangeTracker.Clear();
@@ -349,15 +344,16 @@ namespace Bug_Tracker_Tests
             }
         }
 
+
         [Fact]
-        public void Delete_RemovesEntities()
+        public async Task DeleteAsync_RemovesEntities()
         {
             using (var context = Fixture.CreateContext())
             {
                 context.Database.BeginTransaction();
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                projectRepository.Delete(2);
+                await projectRepository.DeleteAsync(2);
                 context.SaveChanges();
 
                 context.ChangeTracker.Clear();
@@ -365,16 +361,17 @@ namespace Bug_Tracker_Tests
             }
         }
 
+
         [Fact]
-        public void Save_SavesChangesToTheDatabase()
+        public async Task SaveAsync_SavesChangesToTheDatabase()
         {
             using (var context = Fixture.CreateContext())
             {
                 context.Database.BeginTransaction();
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                context.Projects.Add(new Project() { Title = "Project 4 title", Description = "Project 4 description", Tickets = new List<Ticket>() });
-                projectRepository.Save();
+                context.Projects.Add(new Project() { Title = "Project 4 title", Description = "Project 4 description", OwnerId = "22222", Tickets = new List<Ticket>() });
+                await projectRepository.SaveAsync();
 
                 context.ChangeTracker.Clear();
                 Assert.Equal(4, context.Projects.Count());

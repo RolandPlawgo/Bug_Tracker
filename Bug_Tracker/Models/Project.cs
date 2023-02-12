@@ -6,5 +6,6 @@
         public string Title { get; set; }
         public string Description { get; set; }
         public List<Ticket> Tickets { get; set; }
+        public string OwnerId { get; set; }
     }
 }

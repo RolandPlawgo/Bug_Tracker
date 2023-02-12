@@ -1,4 +1,9 @@
-﻿@model Bug_Tracker.Models.Project
+﻿@using Microsoft.AspNetCore.Authorization
+@using Bug_Tracker.Authorization
+
+@inject IAuthorizationService _authorizationService
+
+@model Bug_Tracker.Models.Project
 
 @{
     ViewData["Title"] = "Details";
@@ -12,8 +17,15 @@
 <p>@Html.DisplayFor(m => m.Description)</p>
 <br />
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-primary">Edit</a> &nbsp;
-    <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-outline-danger">Delete</a>  
+    @if ((await _authorizationService.AuthorizeAsync(User, Model, CommentOperationAuthorizationRequirements.Update)).Succeeded)
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-primary">Edit</a>
+    }
+    &nbsp;
+    @if ((await _authorizationService.AuthorizeAsync(User, Model, CommentOperationAuthorizationRequirements.Delete)).Succeeded)
+    {
+        <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-outline-danger">Delete</a>
+    }
 </div>
 <br />
 <div>

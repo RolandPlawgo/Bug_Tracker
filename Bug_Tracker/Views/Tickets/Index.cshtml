@@ -1,4 +1,9 @@
-﻿@model IEnumerable<Bug_Tracker.Models.Ticket>
+﻿@using Bug_Tracker.Authorization
+@using Microsoft.AspNetCore.Authorization
+
+@inject IAuthorizationService _authorizationService
+
+@model IEnumerable<Bug_Tracker.Models.Ticket>
 <h2>Tickets</h2>
 <br />
 <p>
@@ -43,7 +48,7 @@
         <label class="form-label">Project</label>
         <select name="projectFilter" class="form-select-sm">
             <option>any</option>
-            @foreach(var item in (List<string>)ViewData["Projects"])
+            @foreach (var item in (List<string>)ViewData["Projects"])
             {
                 if (ViewData["ProjectFilter"]?.ToString() == item)
                 {
@@ -90,9 +95,6 @@
                 </a>
             </th>
             <th>
-                @*<a asp-action="Index" asp-route-projectFilter="@ViewData["ProjectFilter"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]">
-                    @Html.DisplayNameFor(model => model.Project)
-                </a>*@
                 @Html.DisplayNameFor(model => model.Project)
             </th>
             <th></th>
@@ -121,7 +123,10 @@
                     @Html.DisplayFor(modelItem => item.Project.Title)
                 </td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if ((await _authorizationService.AuthorizeAsync(User, item, TicketOperationAuthorizationRequirements.Read)).Succeeded)
+                    {
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    }
                 </td>
             </tr>
         }

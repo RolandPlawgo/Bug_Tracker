@@ -1,7 +1,11 @@
-﻿using Bug_Tracker.Data;
+﻿using Bug_Tracker.Authorization;
+using Bug_Tracker.Data;
 using Bug_Tracker.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -9,39 +13,43 @@ namespace Bug_Tracker.Controllers
 {
     public class CommentsController : Controller
     {
-        IGenericRepository<Comment> _commentRepository;
-        IGenericRepository<Ticket> _ticketRepository;
+        private readonly IGenericRepository<Comment> _commentRepository;
+        private readonly IGenericRepository<Ticket> _ticketRepository;
         private readonly ILogger<CommentsController> _logger;
-        public CommentsController(IGenericRepository<Comment> commentRepository, IGenericRepository<Ticket> ticketRepository, ILogger<CommentsController> logger)
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IAuthorizationService _authorizationService;
+        public CommentsController(IGenericRepository<Comment> commentRepository, IGenericRepository<Ticket> ticketRepository, ILogger<CommentsController> logger, UserManager<IdentityUser> userManager, IAuthorizationService authorizationService)
         {
             _commentRepository = commentRepository;
             _ticketRepository = ticketRepository;
             _logger = logger;
+            _userManager = userManager;
+            _authorizationService = authorizationService;
         }
 
         // GET: Comments?ticketId=1
-        public ActionResult Index(int ticketId)
+        public async Task<ActionResult> Index(int ticketId)
         {
             _logger.LogInformation("GET: Comments?ticketId={ticketId}", ticketId);
 
-            if (_ticketRepository.GetEntity(ticketId) == null)
+            if (await _ticketRepository.GetEntityAsync(ticketId) == null)
             {
                 return NotFound();
             }
 
             ViewData["TicketId"] = ticketId;
-            ViewData["TicketTitle"] = _ticketRepository.GetEntity(ticketId)!.Title;
+            ViewData["TicketTitle"] = (await _ticketRepository.GetEntityAsync(ticketId))!.Title;
 
-            List<Comment> comments = _commentRepository.Get(filter: c => c.TicketId == ticketId).ToList();
+            List<Comment> comments = (await _commentRepository.GetAsync(filter: c => c.TicketId == ticketId)).ToList();
             return View(comments);
         }
 
         // GET: Comments/Create?ticketId=1
-        public ActionResult Create(int ticketId)
+        public async Task<ActionResult> Create(int ticketId)
         {
             _logger.LogInformation("GET: Comments/Create?ticketId={ticketId}", ticketId);
 
-            if (_ticketRepository.GetEntity(ticketId) == null)
+            if (await _ticketRepository.GetEntityAsync(ticketId) == null)
             {
                 return NotFound();
             }
@@ -53,25 +61,35 @@ namespace Bug_Tracker.Controllers
         // POST: Comments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(int ticketId, [Bind("Text")] Comment comment)
+        public async Task<ActionResult> Create(int ticketId, [Bind("Text")] Comment comment)
         {
-            if (_ticketRepository.GetEntity(ticketId) == null)
+            if (await _ticketRepository.GetEntityAsync(ticketId) == null)
             {
                 return NotFound();
+            }
+
+            comment.OwnerId = _userManager.GetUserId(User);
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, CommentOperationAuthorizationRequirements.Create);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
             }
 
             ViewData["TicketId"] = ticketId;
 
             ModelState.ClearValidationState("Ticket");
             ModelState.MarkFieldValid("Ticket");
-            if(ModelState.IsValid)
+            ModelState.ClearValidationState("OwnerId");
+            ModelState.MarkFieldValid("OwnerId");
+            if (ModelState.IsValid)
             {
                 _logger.LogInformation("POST: Comments/Create (ticketId={ticketId})", ticketId);
 
                 comment.TicketId = ticketId;
                 comment.Date = DateTime.Now;
-                _commentRepository.Create(comment);
-                _commentRepository.Save();
+                await _commentRepository.CreateAsync(comment);
+                await _commentRepository.SaveAsync();
                 return RedirectToAction(nameof(Index), new {ticketId = ticketId});
             }
             else
@@ -83,21 +101,27 @@ namespace Bug_Tracker.Controllers
         }
 
         // GET: Comments/Edit/1?ticketId=1
-        public ActionResult Edit(int id, int ticketId)
+        public async Task<ActionResult> Edit(int id, int ticketId)
         {
             _logger.LogInformation("GET: Comments/Edit/{id}?ticketId={ticketId}", id, ticketId);
 
-            if (_ticketRepository.GetEntity(ticketId) == null)
+            if (await _ticketRepository.GetEntityAsync(ticketId) == null)
             {
                 return NotFound();
             }
 
             ViewData["TicketId"] = ticketId;
 
-            Comment? comment = _commentRepository.GetEntity(id);
+            Comment? comment = await _commentRepository.GetEntityAsync(id);
             if (comment == null)
             {
                 return NotFound();
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, CommentOperationAuthorizationRequirements.Update);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
             }
 
             return View(comment);
@@ -106,31 +130,40 @@ namespace Bug_Tracker.Controllers
         // POST: Comments/Edit/1
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, int ticketId, [Bind("Text")] Comment comment)
+        public async Task<ActionResult> Edit(int id, int ticketId, [Bind("Text")] Comment comment)
         {
-            if (_ticketRepository.GetEntity(ticketId) == null)
+            if (await _ticketRepository.GetEntityAsync(ticketId) == null)
             {
                 return NotFound();
+            }
+
+            _logger.LogInformation("POST: Comments/Edit/{id} (ticketId={ticketId})", id, ticketId);
+
+            Comment? commentToEdit = await _commentRepository.GetEntityAsync(id);
+            if (commentToEdit == null)
+            {
+                return NotFound();
+            }
+            commentToEdit.Text = comment.Text;
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, commentToEdit, CommentOperationAuthorizationRequirements.Create);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
             }
 
             ViewData["TicketId"] = ticketId;
 
             ModelState.ClearValidationState("Ticket");
             ModelState.MarkFieldValid("Ticket");
+            ModelState.ClearValidationState("OwnerId");
+            ModelState.MarkFieldValid("OwnerId");
             if (ModelState.IsValid)
             {
-                _logger.LogInformation("POST: Comments/Edit/{id} (ticketId={ticketId})", id, ticketId);
-
-                Comment? commentToEdit = _commentRepository.GetEntity(id);
-                if (commentToEdit == null)
-                {
-                    return NotFound();
-                }
-                commentToEdit.Text = comment.Text;
                 try
                 {
-                    _commentRepository.Edit(commentToEdit);
-                    _commentRepository.Save();
+                    await _commentRepository.EditAsync(commentToEdit);
+                    await _commentRepository.SaveAsync();
                     return RedirectToAction(nameof(Index), new { ticketId = ticketId });
                 }
                 catch (Exception ex)
@@ -150,21 +183,27 @@ namespace Bug_Tracker.Controllers
 
 
         // GET: Comments/Delete/1?ticketId=1
-        public ActionResult Delete(int id, int ticketId)
+        public async Task<ActionResult> Delete(int id, int ticketId)
         {
             _logger.LogInformation("GET: Comments/Delete/{id}?ticketId={ticketId}", id, ticketId);
 
-            if (_ticketRepository.GetEntity(ticketId) == null)
+            if (await _ticketRepository.GetEntityAsync(ticketId) == null)
             {
                 return NotFound();
             }
 
             ViewData["TicketId"] = ticketId;
 
-            Comment? comment = _commentRepository.GetEntity(id);
+            Comment? comment = await _commentRepository.GetEntityAsync(id);
             if (comment == null)
             {
                 return NotFound();
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, CommentOperationAuthorizationRequirements.Delete);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
             }
 
             return View();
@@ -173,25 +212,32 @@ namespace Bug_Tracker.Controllers
         // POST: Comments/Delete/1
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, int ticketId, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id, int ticketId, IFormCollection collection)
         {
             _logger.LogInformation("POST: Comments/Delete/{id} (ticketId={ticketId})", id, ticketId);
 
-            if (_ticketRepository.GetEntity(ticketId) == null)
+            if (await _ticketRepository.GetEntityAsync(ticketId) == null)
             {
                 return NotFound();
             }
-            if (_commentRepository.GetEntity(id) == null)
+            Comment? comment = await _commentRepository.GetEntityAsync(id);
+            if (comment == null)
             {
                 return NotFound();
+            }
+
+            var isAuthorized = await _authorizationService.AuthorizeAsync(User, comment, CommentOperationAuthorizationRequirements.Create);
+            if (!isAuthorized.Succeeded)
+            {
+                return Forbid();
             }
 
             ViewData["TicketId"] = ticketId;
 
             try
             {
-                _commentRepository.Delete(id);
-                _commentRepository.Save();
+                await _commentRepository.DeleteAsync(id);
+                await _commentRepository.SaveAsync();
                 return RedirectToAction(nameof(Index), new { ticketId = ticketId });
             }
             catch (Exception ex)

@@ -14,11 +14,11 @@ namespace Bug_Tracker.Data
             dbSet = _context.Set<TEntity>();
         }
 
-        public IEnumerable<TEntity> Get()
+        public async Task<IEnumerable<TEntity>> GetAsync()
         {
-            return dbSet;
+            return await dbSet.ToListAsync();
         }
-        public IEnumerable<TEntity> Get(
+        public async Task<IEnumerable<TEntity>> GetAsync(
             string includeProperties = "",
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
@@ -40,9 +40,9 @@ namespace Bug_Tracker.Data
                 entities = orderBy(entities);
             }
 
-            return entities;
+            return await entities.ToListAsync();
         }
-        public IEnumerable<TEntity> Get(
+        public async Task<IEnumerable<TEntity>> GetAsync(
             string includeProperties = "",
             List<Expression<Func<TEntity, bool>>>? filters = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
@@ -67,12 +67,11 @@ namespace Bug_Tracker.Data
                 entities = orderBy(entities);
             }
 
-            return entities;
+            return await entities.ToListAsync();
         }
-        public IEnumerable<TEntity> Get(
+        public async Task<IEnumerable<TEntity>> GetAsync(
             int page,
             int elementsOnPage,
-            out int pages,
             string includeProperties = "",
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
@@ -85,7 +84,6 @@ namespace Bug_Tracker.Data
             {
                 throw new ArgumentException("Number elements in page cannot lower or equal to 0");
             }
-
 
             IQueryable<TEntity> entities = dbSet;
 
@@ -104,16 +102,22 @@ namespace Bug_Tracker.Data
                 entities = orderBy(entities);
             }
 
-            pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
+            //pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
+            int pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
+            if (pages == 0) pages = 1;
+
+            if (page > pages)
+            {
+                throw new ArgumentException("Page does not exist");
+            }
 
             entities = entities.Skip((page - 1) * elementsOnPage).Take(elementsOnPage);
 
-            return entities;
+            return await entities.ToListAsync();
         }
-        public IEnumerable<TEntity> Get(
+        public async Task<IEnumerable<TEntity>> GetAsync(
             int page,
             int elementsOnPage,
-            out int pages,
             string includeProperties = "",
             List<Expression<Func<TEntity, bool>>>? filters = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
@@ -148,7 +152,10 @@ namespace Bug_Tracker.Data
                 entities = orderBy(entities);
             }
 
-            pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
+            //pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
+            int pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
+            if (pages == 0) pages = 1;
+
             if (page > pages)
             {
                 throw new ArgumentException("Page does not exist");
@@ -156,14 +163,14 @@ namespace Bug_Tracker.Data
 
             entities = entities.Skip((page - 1) * elementsOnPage).Take(elementsOnPage);
 
-            return entities;
+            return await entities.ToListAsync();
         }
 
-        public TEntity? GetEntity(int id)
+        public async Task<TEntity?> GetEntityAsync(int id)
         {
-            return dbSet.Find(id);
+            return await dbSet.FindAsync(id);
         }
-        public TEntity? GetEntity(Expression<Func<TEntity, bool>>? filter, string includeProperties = "")
+        public async Task <TEntity?> GetEntityAsync(Expression<Func<TEntity, bool>>? filter, string includeProperties = "")
         {
             IQueryable<TEntity> entities = dbSet;
 
@@ -177,17 +184,17 @@ namespace Bug_Tracker.Data
                 entities = entities.Where(filter);
             }
 
-            return entities.FirstOrDefault();
+            return await entities.FirstOrDefaultAsync();
         }
 
-        public void Create(TEntity entity)
+        public async Task CreateAsync(TEntity entity)
         {
-            dbSet.Add(entity);
+            await dbSet.AddAsync(entity);
         }
 
-        public void Edit(TEntity entity)
+        public async Task EditAsync(TEntity entity)
         {
-            if (dbSet.Contains(entity))
+            if (await dbSet.ContainsAsync(entity))
             {
                 dbSet.Update(entity);
             }
@@ -197,11 +204,12 @@ namespace Bug_Tracker.Data
             }
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            if (GetEntity(id) != null)
+            TEntity? entity = await GetEntityAsync(id);
+            if (entity != null)
             {
-                dbSet.Remove(GetEntity(id)!);
+                dbSet.Remove(entity);
             }
             else
             {
@@ -209,9 +217,9 @@ namespace Bug_Tracker.Data
             }
         }
 
-        public void Save()
+        public async Task SaveAsync()
         {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }
