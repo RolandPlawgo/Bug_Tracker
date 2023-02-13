@@ -1,7 +1,9 @@
 ﻿@using Bug_Tracker.Authorization
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 
 @inject IAuthorizationService _authorizationService
+@inject UserManager<IdentityUser> _userManager
 
 @model IEnumerable<Bug_Tracker.Models.Comment>
 
@@ -22,6 +24,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Date)
             </th>
+            <th>Owner</th>
             <th></th>
         </tr>
     </thead>
@@ -33,6 +36,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Date)
+            </td>
+            <td>
+                @await _userManager.FindByIdAsync(item.OwnerId)
             </td>
             <td>
                 @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Update)).Succeeded)

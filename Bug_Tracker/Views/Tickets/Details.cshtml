@@ -1,7 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using Bug_Tracker.Authorization
+@using Microsoft.AspNetCore.Identity
 
 @inject IAuthorizationService _authorizationService
+@inject UserManager<IdentityUser> _userManager
 
 @model Bug_Tracker.Models.Ticket
 
@@ -33,6 +35,12 @@
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Date)
+        </dd>
+        <dt class="col-sm-2">
+            Owner
+        </dt>
+        <dd class="col-sm-10">
+            @await _userManager.FindByIdAsync(Model.OwnerId)
         </dd>
     </dl>
     <br />

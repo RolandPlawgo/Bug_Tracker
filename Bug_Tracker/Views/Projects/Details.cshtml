@@ -1,7 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using Bug_Tracker.Authorization
+@using Microsoft.AspNetCore.Identity
 
 @inject IAuthorizationService _authorizationService
+@inject UserManager<IdentityUser> _userManager
 
 @model Bug_Tracker.Models.Project
 
@@ -15,6 +17,7 @@
 
 <h1>@Html.DisplayFor(m => m.Title)</h1>
 <p>@Html.DisplayFor(m => m.Description)</p>
+<p>@await _userManager.FindByIdAsync(Model.OwnerId)</p>
 <br />
 <div>
     @if ((await _authorizationService.AuthorizeAsync(User, Model, CommentOperationAuthorizationRequirements.Update)).Succeeded)

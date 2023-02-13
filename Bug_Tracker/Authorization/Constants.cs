@@ -4,7 +4,7 @@
     {
         public static readonly string AdministratorsRole = "admin";
         public static readonly string ManagersRole = "manager";
-        public static readonly string UsersRole = "user";
+        public static readonly string NoRole = "user";
 
 
         public static readonly string ProjectCreateOperationName = "CreateProject";
