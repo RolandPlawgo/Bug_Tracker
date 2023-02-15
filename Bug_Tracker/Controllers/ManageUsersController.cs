@@ -131,6 +131,53 @@ namespace Bug_Tracker.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        //GET: ManageUsers/Delete/
+        [HttpGet]
+        public async Task<ActionResult> Delete(string id)
+        {
+            _logger.LogInformation("POST: ManageUsers/Delete/{id}", id);
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            ManageUsersViewModel model = new ManageUsersViewModel();
+            model.Id = user.Id;
+            model.Email = user.Email;
+            model.Role = (await _userManager.GetRolesAsync(user)).FirstOrDefault() == null ? Constants.NoRole : (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+
+            return View(model);
+        }
+
+        //POST: ManageUsers/Delete/
+        [HttpPost]
+        public async Task<ActionResult> Delete(string id, IFormCollection formCollection)
+        {
+            _logger.LogInformation("POST: ManageUsers/Delete/{id}", id);
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                await _userManager.DeleteAsync(user);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("POST: ManageUsers/Delete/{id} Exception {exception}", id, ex.Message);
+                // TODO: Error page
+                return RedirectToAction(nameof(Index));
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
         private async Task<List<string>> GetRoleNamesAsync()
         {
             var roles = await _roleManager.Roles.ToListAsync();
