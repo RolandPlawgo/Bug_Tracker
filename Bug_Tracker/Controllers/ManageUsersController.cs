@@ -117,16 +117,7 @@ namespace Bug_Tracker.Controllers
                 }
             }
 
-            try
-            {
-                await _userManager.UpdateAsync(user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("POST: ManageUsers/Edit/{id} Exception {exception}", id, ex.Message);
-                // TODO: Error page
-                return RedirectToAction(nameof(Index));
-            }
+            await _userManager.UpdateAsync(user);
 
             return RedirectToAction(nameof(Index));
         }
@@ -162,16 +153,7 @@ namespace Bug_Tracker.Controllers
                 return NotFound();
             }
 
-            try
-            {
-                await _userManager.DeleteAsync(user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("POST: ManageUsers/Delete/{id} Exception {exception}", id, ex.Message);
-                // TODO: Error page
-                return RedirectToAction(nameof(Index));
-            }
+            await _userManager.DeleteAsync(user);
 
             return RedirectToAction(nameof(Index));
         }

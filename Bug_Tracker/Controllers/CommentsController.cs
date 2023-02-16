@@ -160,18 +160,9 @@ namespace Bug_Tracker.Controllers
             ModelState.MarkFieldValid("OwnerId");
             if (ModelState.IsValid)
             {
-                try
-                {
-                    await _commentRepository.EditAsync(commentToEdit);
-                    await _commentRepository.SaveAsync();
-                    return RedirectToAction(nameof(Index), new { ticketId = ticketId });
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("POST: Comments/Edit/{id} (ticketId={ticketId}) - Exception: {exception}", id, ticketId, ex.Message);
-                    // TODO: Error page
-                    return RedirectToAction(nameof(Index), new { ticketId = ticketId });
-                }
+                await _commentRepository.EditAsync(commentToEdit);
+                await _commentRepository.SaveAsync();
+                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
             }
             else
             {
@@ -234,18 +225,9 @@ namespace Bug_Tracker.Controllers
 
             ViewData["TicketId"] = ticketId;
 
-            try
-            {
-                await _commentRepository.DeleteAsync(id);
-                await _commentRepository.SaveAsync();
-                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("POST: Comments/Delete/{id} - Exception: {exception}", id, ex.Message);
-                // TODO: Error page
-                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
-            }
+            await _commentRepository.DeleteAsync(id);
+            await _commentRepository.SaveAsync();
+            return RedirectToAction(nameof(Index), new { ticketId = ticketId });
         }
     }
 }

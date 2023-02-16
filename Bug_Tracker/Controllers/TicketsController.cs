@@ -243,19 +243,10 @@ namespace Bug_Tracker.Controllers
             if (ModelState.IsValid)
             {
                 _logger.LogInformation("POST: Tickets/Edit/{id}", id);
-                try
-                {
-                    await _ticketRepository.EditAsync(ticketToEdit);
-                    await _ticketRepository.SaveAsync();
+                await _ticketRepository.EditAsync(ticketToEdit);
+                await _ticketRepository.SaveAsync();
 
-                    return RedirectToAction(nameof(Details), new { id = id });
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("POST: Tickets/Edit/{id} - Exception: {exception}", id, ex.Message);
-                    // TODO: Error page
-                    return RedirectToAction(nameof(Details), new { id = id });
-                }
+                return RedirectToAction(nameof(Details), new { id = id });
             }
             else
             {
@@ -306,18 +297,9 @@ namespace Bug_Tracker.Controllers
                 return Forbid();
             }
 
-            try
-            {
-                await _ticketRepository.DeleteAsync(id);
-                await _ticketRepository.SaveAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("POST: Tickets/Delete/{id} - Exception: {exception}", id, ex.Message);
-                // TODO: Error page
-                return RedirectToAction(nameof(Details), new {id = id});
-            }
+            await _ticketRepository.DeleteAsync(id);
+            await _ticketRepository.SaveAsync();
+            return RedirectToAction(nameof(Index));
         }
 
 

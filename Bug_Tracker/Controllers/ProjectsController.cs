@@ -134,19 +134,10 @@ namespace Bug_Tracker.Controllers
             if (ModelState.IsValid)
             {
                 _logger.LogInformation("POST: Projects/Edit/{id}", id);
-                try
-                {
-                    await _projectRepository.EditAsync(projectToEdit);
-                    await _projectRepository.SaveAsync();
+                await _projectRepository.EditAsync(projectToEdit);
+                await _projectRepository.SaveAsync();
 
-                    return RedirectToAction(nameof(Details), new { id = id });
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("POST: Projects/Edit/{id} Exception {exception}", id, ex.Message);
-                    // TODO: Error page
-                    return RedirectToAction(nameof(Details), new { id = id });
-                }
+                return RedirectToAction(nameof(Details), new { id = id });
             }
             else
             {
@@ -194,19 +185,10 @@ namespace Bug_Tracker.Controllers
                 return Forbid();
             }
 
-            try
-            {
-                await _projectRepository.DeleteAsync(id);
-                await _projectRepository.SaveAsync();
+            await _projectRepository.DeleteAsync(id);
+            await _projectRepository.SaveAsync();
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("POST: Projects/Delete/{id} - Exception: {exception}", id, ex.Message);
-                // TODO: Error page
-                return RedirectToAction(nameof(Details));
-            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }
