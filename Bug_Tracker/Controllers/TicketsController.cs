@@ -26,7 +26,8 @@ namespace Bug_Tracker.Controllers
         }
 
         // GET: Tickets
-        public async Task<IActionResult> Index(string sortOrder, string searchString, string statusFilter, string priorityFilter, string projectFilter, int page = 1)
+        //public async Task<IActionResult> Index(string sortOrder, string searchString, string statusFilter, string priorityFilter, string projectFilter, int page = 1, string ownersTickets = "false")
+        public async Task<IActionResult> Index(string sortOrder, string searchString, string statusFilter, string priorityFilter, string projectFilter, int page = 1, bool ownersTickets = false)
         {
             _logger.LogInformation("GET: Tickets");
 
@@ -43,6 +44,7 @@ namespace Bug_Tracker.Controllers
             ViewData["StatusFilter"] = statusFilter;
             ViewData["PriorityFilter"] = priorityFilter;
             ViewData["ProjectFilter"] = projectFilter;
+            ViewData["OwnersTickets"] = ownersTickets;
 
             ViewData["Projects"] = await GetProjectTitlesAsync();
 
@@ -50,18 +52,23 @@ namespace Bug_Tracker.Controllers
             List<Expression<Func<Ticket, bool>>> filters = new List<Expression<Func<Ticket, bool>>>();
             Func<IQueryable<Ticket>, IOrderedQueryable<Ticket>>? orderBy = null;
 
+            //if (ownersTickets == "true")
+            if (ownersTickets)
+            {
+                filters.Add(t => t.OwnerId == _userManager.GetUserId(User));
+            }
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                filters.Add((t => t.Title.ToLower().Contains(searchString.ToLower())
-                               || t.ShortDescription.ToLower().Contains(searchString.ToLower())));
+                filters.Add(t => t.Title.ToLower().Contains(searchString.ToLower())
+                               || t.ShortDescription.ToLower().Contains(searchString.ToLower()));
             }
             if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "any")
             {
-                filters.Add((t => t.Status == (Status)Enum.Parse(typeof(Status), statusFilter)));
+                filters.Add(t => t.Status == (Status)Enum.Parse(typeof(Status), statusFilter));
             }
             if (!string.IsNullOrEmpty(priorityFilter) && priorityFilter != "any")
             {
-                filters.Add((t => t.Priority == (Priority)Enum.Parse(typeof(Priority), priorityFilter)));
+                filters.Add(t => t.Priority == (Priority)Enum.Parse(typeof(Priority), priorityFilter));
             }
             if (!string.IsNullOrEmpty(projectFilter) && projectFilter != "any")
             {

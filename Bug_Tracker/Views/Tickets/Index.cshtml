@@ -11,7 +11,7 @@
 <p>
     <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
-<form asp-action="Index" method="get" class="row row-cols-lg-auto row-cols-md-auto align-items-center">
+<form asp-action="Index" asp-route-ownersTickets="@ViewData["OwnersTickets"]" class="row row-cols-lg-auto row-cols-md-auto align-items-center">
     <div class="col-12">
         <label class="form-label">Search</label>
         <input type="text" name="searchString" value="@ViewData["SearchString"]"/>
@@ -66,7 +66,7 @@
     <div class="col-12">
         <button type="submit" class="btn btn-primary">Search</button>
         &nbsp
-        <a asp-action="Index" class="btn btn-light">Clear search</a>
+        <a asp-action="Index" asp-route-ownersTickets="@ViewData["OwnersTickets"]" class="btn btn-light">Clear search</a>
     </div>
 </form>
 
@@ -76,7 +76,7 @@
     <thead>
         <tr>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["TitleSortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["TitleSortParam"]" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-ownersTickets="@ViewData["OwnersTickets"]")>
                     @Html.DisplayNameFor(model => model.Title)
                 </a>
             </th>
@@ -87,12 +87,12 @@
                 @Html.DisplayNameFor(model => model.Status)
             </th>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["PrioritySortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["PrioritySortParam"]" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-ownersTickets="@ViewData["OwnersTickets"]">
                     @Html.DisplayNameFor(model => model.Priority)
                 </a>
             </th>
             <th>
-                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParam"]"     asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]">
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParam"]" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-ownersTickets="@ViewData["OwnersTickets"]">
                     @Html.DisplayNameFor(model => model.Date)
                 </a>
             </th>
@@ -146,7 +146,7 @@
     }
     else
     {
-        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] - 1)" class="btn btn-light" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"]>
+        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] - 1)" class="btn btn-light" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">
             Previous Page
         </a>
     }
@@ -157,7 +157,7 @@
     }
     else
     {
-        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] + 1)" class="btn btn-light" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"]>
+        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] + 1)" class="btn btn-light" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">
             Next Page
         </a>
     }

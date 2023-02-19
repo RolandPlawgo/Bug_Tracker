@@ -25,7 +25,16 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Projects" asp-action="Index">Projects</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Tickets" asp-action="Index">Tickets</a>
+                            @*<a class="nav-link text-dark" asp-area="" asp-controller="Tickets" asp-action="Index">Tickets</a>*@
+                            <div class="btn-group">
+                                <a type="button" class="nav-link text-dark" asp-area="" asp-controller="Tickets" asp-action="Index">Tickets</a>
+                                <a type="button" class="nav-link text-dark dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" class="nav-link text-dark" asp-area="" asp-controller="Tickets" asp-action="Index" asp-route-ownersTickets="true">My Tickets</a></li>
+                                </ul>
+                            </div>
                         </li>
                         @if (User.IsInRole(Constants.AdministratorsRole))
                         {
