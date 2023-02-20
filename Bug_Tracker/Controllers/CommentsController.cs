@@ -27,23 +27,6 @@ namespace Bug_Tracker.Controllers
             _authorizationService = authorizationService;
         }
 
-        // GET: Comments?ticketId=1
-        public async Task<ActionResult> Index(int ticketId)
-        {
-            _logger.LogInformation("GET: Comments?ticketId={ticketId}", ticketId);
-
-            if (await _ticketRepository.GetEntityAsync(ticketId) == null)
-            {
-                return NotFound();
-            }
-
-            ViewData["TicketId"] = ticketId;
-            ViewData["TicketTitle"] = (await _ticketRepository.GetEntityAsync(ticketId))!.Title;
-
-            List<Comment> comments = (await _commentRepository.GetAsync(filter: c => c.TicketId == ticketId)).ToList();
-            return View(comments);
-        }
-
         // GET: Comments/Create?ticketId=1
         public async Task<ActionResult> Create(int ticketId)
         {
@@ -90,7 +73,7 @@ namespace Bug_Tracker.Controllers
                 comment.Date = DateTime.Now;
                 await _commentRepository.CreateAsync(comment);
                 await _commentRepository.SaveAsync();
-                return RedirectToAction(nameof(Index), new {ticketId = ticketId});
+                return RedirectToAction("Details", "Tickets", new {id = ticketId});
             }
             else
             {
@@ -162,7 +145,7 @@ namespace Bug_Tracker.Controllers
             {
                 await _commentRepository.EditAsync(commentToEdit);
                 await _commentRepository.SaveAsync();
-                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
+                return RedirectToAction("Details", "Tickets", new { id = ticketId });
             }
             else
             {
@@ -227,7 +210,7 @@ namespace Bug_Tracker.Controllers
 
             await _commentRepository.DeleteAsync(id);
             await _commentRepository.SaveAsync();
-            return RedirectToAction(nameof(Index), new { ticketId = ticketId });
+            return RedirectToAction("Details", "Tickets", new { id = ticketId });
         }
     }
 }

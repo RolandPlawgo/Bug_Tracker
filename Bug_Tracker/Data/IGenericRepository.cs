@@ -26,14 +26,14 @@ namespace Bug_Tracker.Data
         /// <param name="includeProperties"></param>
         /// <param name="filter">If it's null, no filtering will be performed and all entities will be returned</param>
         /// <param name="orderBy">If it's null, the entities will not be ordered</param>
-        Task<IEnumerable<TEntity>> GetAsync(string includeProperties = "", Expression<Func<TEntity, bool>>? filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
+        Task<IEnumerable<TEntity>> GetAsync(List<string>? includeProperties = null, Expression<Func<TEntity, bool>>? filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
         /// <summary>
         /// Get all the entities, that satisfy each of the conditions specified in <paramref name="filters"/> ordered by <paramref name="orderBy"/>
         /// </summary>
         /// <param name="includeProperties"></param>
         /// <param name="filters">If it's null, no filtering will be performed and all entities will be returned</param>
         /// <param name="orderBy">If it's null, the entities will not be ordered</param>
-        Task<IEnumerable<TEntity>> GetAsync(string includeProperties = "", List<Expression<Func<TEntity, bool>>>? filters = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
+        Task<IEnumerable<TEntity>> GetAsync(List<string>? includeProperties = null, List<Expression<Func<TEntity, bool>>>? filters = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
         /// <summary>
         /// Get entities, that satisfy the condition specified in <paramref name="filter"/> ordered by <paramref name="orderBy"/>, to be displayed on the page <paramref name="page"/> of <paramref name="pages"/>
         /// </summary>
@@ -43,7 +43,7 @@ namespace Bug_Tracker.Data
         /// <param name="includeProperties"></param>
         /// <param name="filter">If it's null, no filtering will be performed and all entities will be returned</param>
         /// <param name="orderBy">If it's null, the entities will not be ordered</param>
-        Task<IEnumerable<TEntity>> GetAsync(int page, int elementsOnPage, string includeProperties = "", Expression<Func<TEntity, bool>>? filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
+        Task<IEnumerable<TEntity>> GetAsync(int page, int elementsOnPage, List<string>? includeProperties = null, Expression<Func<TEntity, bool>>? filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
         /// <summary>
         /// Get entities, that satisfy each of the conditions specified in <paramref name="filters"/> ordered by <paramref name="orderBy"/>, to be displayed on the page <paramref name="page"/> of <paramref name="pages"/>
         /// </summary>
@@ -53,7 +53,7 @@ namespace Bug_Tracker.Data
         /// <param name="includeProperties"></param>
         /// <param name="filters">If it's null, no filtering will be performed and all entities will be returned</param>
         /// <param name="orderBy">If it's null, the entities will not be ordered</param>
-        Task<IEnumerable<TEntity>> GetAsync(int page, int elementsOnPage, string includeProperties = "", List<Expression<Func<TEntity, bool>>>? filters = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
+        Task<IEnumerable<TEntity>> GetAsync(int page, int elementsOnPage, List<string>? includeProperties = null, List<Expression<Func<TEntity, bool>>>? filters = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
         /// <summary>
         /// Gets an entity that satisfies the condition
         /// </summary>
@@ -67,7 +67,7 @@ namespace Bug_Tracker.Data
         /// <param name="includeProperties"></param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="filter"/> is null</exception>
         /// <returns>The first entity that satisfies the condition specified in <paramref name="filter"/></returns>
-        Task<TEntity?> GetEntityAsync(Expression<Func<TEntity, bool>> filter, string includeProperties = "");
+        Task<TEntity?> GetEntityAsync(Expression<Func<TEntity, bool>> filter, List<string>? includeProperties = null);
         /// <summary>
         /// Saves all changes, that have been made in this context, to the database
         /// </summary>

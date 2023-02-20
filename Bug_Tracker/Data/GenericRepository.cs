@@ -19,15 +19,18 @@ namespace Bug_Tracker.Data
             return await dbSet.ToListAsync();
         }
         public async Task<IEnumerable<TEntity>> GetAsync(
-            string includeProperties = "",
+            List<string>? includeProperties = null,
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
             IQueryable<TEntity> entities = dbSet;
 
-            if (includeProperties != "")
+            if (includeProperties != null)
             {
-                entities = entities.Include(includeProperties);
+                foreach (string property in includeProperties)
+                {
+                    entities = entities.Include(property);
+                }
             }
 
             if (filter != null)
@@ -43,15 +46,18 @@ namespace Bug_Tracker.Data
             return await entities.ToListAsync();
         }
         public async Task<IEnumerable<TEntity>> GetAsync(
-            string includeProperties = "",
+            List<string>? includeProperties = null,
             List<Expression<Func<TEntity, bool>>>? filters = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
             IQueryable<TEntity> entities = dbSet;
 
-            if (includeProperties != "")
+            if (includeProperties != null)
             {
-                entities = entities.Include(includeProperties);
+                foreach (string property in includeProperties)
+                {
+                    entities = entities.Include(property);
+                }
             }
 
             if (filters != null && filters.Count() != 0)
@@ -72,7 +78,7 @@ namespace Bug_Tracker.Data
         public async Task<IEnumerable<TEntity>> GetAsync(
             int page,
             int elementsOnPage,
-            string includeProperties = "",
+            List<string>? includeProperties = null,
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
@@ -87,9 +93,12 @@ namespace Bug_Tracker.Data
 
             IQueryable<TEntity> entities = dbSet;
 
-            if (includeProperties != "")
+            if (includeProperties != null)
             {
-                entities = entities.Include(includeProperties);
+                foreach (string property in includeProperties)
+                {
+                    entities = entities.Include(property);
+                }
             }
 
             if (filter != null)
@@ -118,7 +127,7 @@ namespace Bug_Tracker.Data
         public async Task<IEnumerable<TEntity>> GetAsync(
             int page,
             int elementsOnPage,
-            string includeProperties = "",
+            List<string>? includeProperties = null,
             List<Expression<Func<TEntity, bool>>>? filters = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
@@ -134,9 +143,12 @@ namespace Bug_Tracker.Data
 
             IQueryable<TEntity> entities = dbSet;
 
-            if (includeProperties != "")
+            if (includeProperties != null)
             {
-                entities = entities.Include(includeProperties);
+                foreach (string property in includeProperties)
+                {
+                    entities = entities.Include(property);
+                }
             }
 
             if (filters != null && filters.Count() != 0)
@@ -170,13 +182,16 @@ namespace Bug_Tracker.Data
         {
             return await dbSet.FindAsync(id);
         }
-        public async Task <TEntity?> GetEntityAsync(Expression<Func<TEntity, bool>>? filter, string includeProperties = "")
+        public async Task <TEntity?> GetEntityAsync(Expression<Func<TEntity, bool>>? filter, List<string>? includeProperties = null)
         {
             IQueryable<TEntity> entities = dbSet;
 
-            if (includeProperties != "")
+            if (includeProperties != null)
             {
-                entities = entities.Include(includeProperties);
+                foreach (string property in includeProperties)
+                {
+                    entities = entities.Include(property);
+                }
             }
 
             if (filter != null)

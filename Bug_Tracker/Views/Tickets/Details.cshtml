@@ -48,10 +48,60 @@
     <p>@Html.DisplayFor(model => model.LongDescription)</p>
 </div>
 <br />
+<br />
 <div>
-    <a asp-controller="Comments" asp-action="Index" asp-route-ticketId="@Model?.Id">Comments</a>
+    @*<a asp-controller="Comments" asp-action="Create" asp-route-ticketId="@Model.Id" class="btn btn-primary">Add comment</a>*@
+    <div style="height:300px;" class="overflow-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Comment
+                    </th>
+                    <th>
+                        Date
+                    </th>
+                    <th>
+                        Owner
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Comment item in Model.Comments)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Text)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Date)
+                        </td>
+                        <td>
+                            @await _userManager.FindByIdAsync(item.OwnerId)
+                        </td>
+                        <td>
+                            @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Update)).Succeeded)
+                            {
+                                <a asp-controller="Comments" asp-action="Edit" asp-route-id="@item.Id" asp-route-ticketId="@Model.Id">Edit</a>
+                            }
+                            &nbsp;
+                            @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Delete)).Succeeded)
+                            {
+                                <a asp-controller="Comments" asp-action="Delete" asp-route-id="@item.Id" asp-route-ticketId="@Model.Id">Delete</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <a asp-controller="Comments" asp-action="Create" asp-route-ticketId="@Model.Id" class="btn btn-primary">Add comment</a>
+    </div>
 </div>
 <br/>
+<br />
 <br />
 <div>
     @if ((await _authorizationService.AuthorizeAsync(User, Model, TicketOperationAuthorizationRequirements.Update)).Succeeded)

@@ -48,7 +48,8 @@ namespace Bug_Tracker.Controllers
 
             ViewData["Projects"] = await GetProjectTitlesAsync();
 
-            string includeProperties = "Project";
+            List<string> includeProperties = new List<string>() { "Project" };
+
             List<Expression<Func<Ticket, bool>>> filters = new List<Expression<Func<Ticket, bool>>>();
             Func<IQueryable<Ticket>, IOrderedQueryable<Ticket>>? orderBy = null;
 
@@ -97,20 +98,13 @@ namespace Bug_Tracker.Controllers
                     break;
             }
 
-            try
-            {
-                IEnumerable<Ticket> ticketsToDisplay = await _ticketRepository.GetAsync(page, elementsOnPage, includeProperties, filters, orderBy);
 
-                int pages = (int)Math.Ceiling((decimal)ticketsToDisplay.Count() / (decimal)elementsOnPage);
-                ViewData["Pages"] = pages;
+            IEnumerable<Ticket> ticketsToDisplay = await _ticketRepository.GetAsync(page, elementsOnPage, includeProperties, filters, orderBy);
 
-                return View(ticketsToDisplay);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogInformation("GET: Tickets/Index - Page not found - Exception message: {message}", ex.Message);
-                return RedirectToAction("Index");
-            }
+            int pages = (int)Math.Ceiling((decimal)ticketsToDisplay.Count() / (decimal)elementsOnPage);
+            ViewData["Pages"] = pages;
+
+            return View(ticketsToDisplay);
         }
 
         // GET: Tickets/Create
@@ -174,7 +168,7 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Tickets/Details/{id}", id);
 
-            Ticket? ticket = await _ticketRepository.GetEntityAsync(t => t.Id == id, "Project");
+            Ticket? ticket = await _ticketRepository.GetEntityAsync(t => t.Id == id, new List<string>() { "Project", "Comments" });
             if (ticket == null)
             {
                 return NotFound();
@@ -197,7 +191,7 @@ namespace Bug_Tracker.Controllers
             var projectTitles = await GetProjectTitlesAsync();
             ViewData["ProjectTitles"] = projectTitles;
 
-            Ticket? ticket = await _ticketRepository.GetEntityAsync(t => t.Id == id, "Project");
+            Ticket? ticket = await _ticketRepository.GetEntityAsync(t => t.Id == id, new List<string>() { "Project" });
             if (ticket == null)
             {
                 return NotFound();
@@ -271,7 +265,7 @@ namespace Bug_Tracker.Controllers
         {
             _logger.LogInformation("GET: Tickets/Delete/{id}", id);
 
-            Ticket? ticket = await _ticketRepository.GetEntityAsync(t => t.Id == id, "Project");
+            Ticket? ticket = await _ticketRepository.GetEntityAsync(t => t.Id == id, new List<string>() { "Project" });
             if (ticket == null)
             {
                 return NotFound();
