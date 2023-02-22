@@ -60,7 +60,7 @@ namespace Bug_Tracker_Tests.Data
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: "Tickets", filter: null);
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: new List<string>() { "Tickets" }, filter: null);
 
                 Assert.All(allProjects, item => Assert.NotNull(item));
             }
@@ -73,7 +73,7 @@ namespace Bug_Tracker_Tests.Data
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: "Tickets", filter: null);
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: new List<string>() { "Tickets" }, filter: null);
 
                 Assert.Equal("Short description 1", allProjects.First().Tickets.First().ShortDescription);
                 Assert.Equal("Long description of ticket 1", allProjects.First().Tickets.First().LongDescription);
@@ -90,7 +90,7 @@ namespace Bug_Tracker_Tests.Data
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: "Tickets", filter: null);
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: new List<string>() { "Tickets" }, filter: null);
 
                 foreach (Project project in allProjects)
                 {
@@ -106,7 +106,7 @@ namespace Bug_Tracker_Tests.Data
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: "Tickets", filters: null);
+                IEnumerable<Project> allProjects = await projectRepository.GetAsync(includeProperties: new List<string>() { "Tickets" }, filters: null);
 
                 Assert.Equal("Short description 1", allProjects.First().Tickets.First().ShortDescription);
                 Assert.Equal("Long description of ticket 1", allProjects.First().Tickets.First().LongDescription);
@@ -282,7 +282,7 @@ namespace Bug_Tracker_Tests.Data
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project? project = await projectRepository.GetEntityAsync(null, "Tickets");
+                Project? project = await projectRepository.GetEntityAsync(null, new List<string>() { "Tickets" });
 
                 Assert.NotNull(project!.Tickets);
             }
@@ -295,7 +295,7 @@ namespace Bug_Tracker_Tests.Data
             {
                 GenericRepository<Project> projectRepository = new GenericRepository<Project>(context);
 
-                Project? project = await projectRepository.GetEntityAsync(null, "Tickets");
+                Project? project = await projectRepository.GetEntityAsync(null, new List<string>() { "Tickets" });
 
                 Assert.Equal("Short description 1", project!.Tickets.First().ShortDescription);
                 Assert.Equal("Long description of ticket 1", project.Tickets.First().LongDescription);

@@ -23,37 +23,6 @@ namespace Bug_Tracker_Tests.Controllers
 {
     public class CommentsControllerTest
     {
-        #region Index tests
-        [Fact]
-        public async Task Index_ReturnsAViewResultWithAllComments_IfTicketExists()
-        {
-            var commentRepositoryMock = new Mock<IGenericRepository<Comment>>();
-            commentRepositoryMock.Setup(r => r.GetAsync(It.IsAny<string>(), It.IsAny<Expression<Func<Comment, bool>>>(), null)).ReturnsAsync(GetTestComments());
-            var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(1))!.ReturnsAsync(GetTestTicket(1));
-            var controller = CreateController(commentRepositoryMock, ticketRepositoryMock);
-
-            var result = await controller.Index(1);
-
-            var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsAssignableFrom<IEnumerable<Comment>>(viewResult.ViewData.Model);
-            Assert.Equal(2, model.Count());
-        }
-        [Fact]
-        public async Task Index_ReturnsANotFoundResult_IfTicketDoesntExist()
-        {
-            var commentRepositoryMock = new Mock<IGenericRepository<Comment>>();
-            commentRepositoryMock.Setup(r => r.GetAsync(It.IsAny<string>(), It.IsAny<Expression<Func<Comment, bool>>>(), null)).ReturnsAsync(GetTestComments());
-            var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(3))!.ReturnsAsync(GetTestTicket(3));
-            var controller = CreateController(commentRepositoryMock, ticketRepositoryMock);
-
-            var result = await controller.Index(3);
-
-            Assert.IsType<NotFoundResult>(result);
-        }
-        #endregion
-
         #region Cerate tests
         [Fact]
         public async Task Create_Get_ReturnsAViewResult_IfTicketExists()

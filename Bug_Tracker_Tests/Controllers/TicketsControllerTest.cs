@@ -38,20 +38,9 @@ namespace Bug_Tracker_Tests.Controllers
 
             var result = await controller.Index("", searchString, statusFilter, priorityFilter, projectFilter, page);
 
-            ticketRepositoryMock.Verify(r => r.GetAsync(page, It.IsAny<int>(), "Project", It.Is<List<Expression<Func<Ticket, bool>>>>(l => l.Count() == numberOfFilters), It.IsAny<Func<IQueryable<Ticket>, IOrderedQueryable<Ticket>>>()));
+            ticketRepositoryMock.Verify(r => r.GetAsync(page, It.IsAny<int>(), new List<string>() { "Project" }, It.Is<List<Expression<Func<Ticket, bool>>>>(l => l.Count() == numberOfFilters), It.IsAny<Func<IQueryable<Ticket>, IOrderedQueryable<Ticket>>>()));
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<IEnumerable<Ticket>>(viewResult.ViewData.Model);
-        }
-        [Fact]
-        public async Task Index_Get_ReturnsARedirectToActionResult_IfArgumentExceptionThrown()
-        {
-            var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetAsync(2, It.IsAny<int>(), It.IsAny<string>(), It.IsAny<List<Expression<Func<Ticket, bool>>>>(), It.IsAny<Func<IQueryable<Ticket>, IOrderedQueryable<Ticket>>>())).Throws(new InvalidOperationException(""));
-            TicketsController controller = CreateController(ticketRepositoryMock);
-
-            var result = await controller.Index("", "", "", "", "", 2);
-
-            Assert.IsType<RedirectToActionResult>(result);
         }
         #endregion
 
@@ -70,7 +59,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Create_Post_CreatesTheTicket_ReturnsARedirectToActionResult_IfProjectExistsAndModelStateValid()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(1));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(1));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock, UserManagerMock("11111"), AuthorizationServiceMock(true));
             Ticket ticket = GetTestTicket(1)!;
@@ -84,7 +73,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Create_Post_ReturnsANotFoundResult_IfProjectDoesntExist()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(3));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(3));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock, UserManagerMock("11111"), AuthorizationServiceMock(true));
             Ticket ticket = GetTestTicket(1)!;
@@ -97,7 +86,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Create_Post_ReturnsAViewResult_IfModelInvalid()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(1));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(1));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock, UserManagerMock("11111"), AuthorizationServiceMock(true));
             controller.ModelState.AddModelError("key", "message");
@@ -111,7 +100,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Create_Post_ReturnsAForbidResult_IfAuthorizationFailed()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(1));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(1));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
             var authorizationServiceMock = AuthorizationServiceMock(false);
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock, UserManagerMock("11111"), authorizationServiceMock);
@@ -129,7 +118,7 @@ namespace Bug_Tracker_Tests.Controllers
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project", "Comments" })).ReturnsAsync(GetTestTicket(1));
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock);
 
             var result = await controller.Details(1);
@@ -143,7 +132,7 @@ namespace Bug_Tracker_Tests.Controllers
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(3));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project", "Comments" })).ReturnsAsync(GetTestTicket(3));
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock);
 
             var result = await controller.Details(3);
@@ -155,7 +144,7 @@ namespace Bug_Tracker_Tests.Controllers
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project", "Comments" })).ReturnsAsync(GetTestTicket(1));
             var authorizationServiceMock = AuthorizationServiceMock(false);
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock, authorizationServiceMock);
 
@@ -170,7 +159,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Edit_Get_ReturnsAViewResultWithATicket_IfTicketExists()
         {
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project" })).ReturnsAsync(GetTestTicket(1));
             var controller = CreateController(ticketRepositoryMock);
 
             var result = await controller.Edit(1);
@@ -183,7 +172,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Edit_Get_ReturnsANotFoundResult_IfTicketDoesntExists()
         {
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(3));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project" })).ReturnsAsync(GetTestTicket(3));
             var controller = CreateController(ticketRepositoryMock);
 
             var result = await controller.Edit(1);
@@ -194,7 +183,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Edit_Get_ReturnsAForbidResult_IfAuthorizationFailed()
         {
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project" })).ReturnsAsync(GetTestTicket(1));
             Mock<IAuthorizationService> authorizationServiceMock = AuthorizationServiceMock(false);
             var controller = CreateController(ticketRepositoryMock, authorizationServiceMock);
 
@@ -207,9 +196,9 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Edit_Post_EditsTheTicket_ReturnsARedirectToActionResult_IfModelValid()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(1));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(1));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestTicket(1));
             ticketRepositoryMock.Setup(r => r.GetEntityAsync(1)!).ReturnsAsync(GetTestTicket(1)!);
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock);
 
@@ -222,9 +211,9 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Edit_Post_ReturnsAViewResultWithATicket_IfModelInvalid()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(1));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(1));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestTicket(1));
             ticketRepositoryMock.Setup(r => r.GetEntityAsync(1)!).ReturnsAsync(GetTestTicket(1)!);
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock);
             controller.ModelState.AddModelError("key", "message");
@@ -238,9 +227,9 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Edit_Post_ReturnsANotFoundResult_IfTicketDoesntExist()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(1));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(1));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestTicket(3));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestTicket(3));
             ticketRepositoryMock.Setup(r => r.GetEntityAsync(1)!).ReturnsAsync(GetTestTicket(1)!);
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock);
 
@@ -252,9 +241,9 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Edit_Post_ReturnsANotFoundResult_IfProjectDoesntExist()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(3));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(3));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestTicket(1));
             ticketRepositoryMock.Setup(r => r.GetEntityAsync(1)!).ReturnsAsync(GetTestTicket(1)!);
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock);
 
@@ -266,9 +255,9 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Edit_Post_ReturnsAForbidResult_IfAuthorizationFailed()
         {
             var projectRepositoryMock = new Mock<IGenericRepository<Project>>();
-            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestProject(1));
+            projectRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Project, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestProject(1));
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<string>())).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), It.IsAny<List<string>>())).ReturnsAsync(GetTestTicket(1));
             ticketRepositoryMock.Setup(r => r.GetEntityAsync(1)!).ReturnsAsync(GetTestTicket(1)!);
             Mock<IAuthorizationService> authorizationServiceMock = AuthorizationServiceMock(false);
             var controller = CreateController(ticketRepositoryMock, projectRepositoryMock, authorizationServiceMock);
@@ -284,7 +273,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Delete_Get_ReturnsAViewResultWithATicket_IfTicketExists()
         {
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project" })).ReturnsAsync(GetTestTicket(1));
             var controller = CreateController(ticketRepositoryMock);
 
             var result = await controller.Delete(1);
@@ -297,7 +286,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Delete_Get_ReturnsANotFoundResult_IfTicketDoesntExist()
         {
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(3));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project" })).ReturnsAsync(GetTestTicket(3));
             var controller = CreateController(ticketRepositoryMock);
 
             var result = await controller.Delete(3);
@@ -331,7 +320,7 @@ namespace Bug_Tracker_Tests.Controllers
         public async Task Delete_Post_ReturnsAForbidResult_IfAuthorizationFailed()
         {
             var ticketRepositoryMock = new Mock<IGenericRepository<Ticket>>();
-            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), "Project")).ReturnsAsync(GetTestTicket(1));
+            ticketRepositoryMock.Setup(r => r.GetEntityAsync(It.IsAny<Expression<Func<Ticket, bool>>>(), new List<string>() { "Project" })).ReturnsAsync(GetTestTicket(1));
             var controller = CreateController(ticketRepositoryMock);
 
             var result = await controller.Delete(1);

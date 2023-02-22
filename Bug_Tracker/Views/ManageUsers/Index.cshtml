@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject UserManager<IdentityUser> _userManager
-
+@{
+    ViewData["Title"] = "Users";
+}
 @model IEnumerable<Bug_Tracker.Models.ManageUsersViewModel>
 
 

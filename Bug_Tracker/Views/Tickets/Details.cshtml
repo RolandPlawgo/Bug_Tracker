@@ -1,12 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @using Bug_Tracker.Authorization
 @using Microsoft.AspNetCore.Identity
-
 @inject IAuthorizationService _authorizationService
 @inject UserManager<IdentityUser> _userManager
-
 @model Bug_Tracker.Models.Ticket
-
+@{
+    ViewData["Title"] = "Ticket Details";
+}
 <div>
     <h1>@Html.DisplayFor(model => model.Title)</h1>
     <h5>@Html.DisplayFor(model => model.ShortDescription)</h5>
@@ -50,8 +50,7 @@
 <br />
 <br />
 <div>
-    @*<a asp-controller="Comments" asp-action="Create" asp-route-ticketId="@Model.Id" class="btn btn-primary">Add comment</a>*@
-    <div style="height:300px;" class="overflow-auto">
+    <div style="min-height:100px; max-height:300px;" class="overflow-auto">
         <table class="table">
             <thead>
                 <tr>

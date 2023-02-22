@@ -1,8 +1,83 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> _userManager
+@model HomeVieweModel
+@{
     ViewData["Title"] = "Home Page";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<br />
+<h3>Projects</h3>
+<br />
+<div class="row row-cols-1 row-cols-md-3 gy-3">
+    @foreach (var item in Model.Projects)
+    {
+        <div class="col">
+            <div class="card h-100" style="border-radius: 5%">
+                <div class="card-body">
+                    <h2 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h2>
+                    <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
+                    <div>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-secondary">Details</a>
+                        &nbsp;
+                        <a asp-controller="Tickets" asp-action="Index" asp-route-projectFilter="@item.Title" class="btn btn-primary">Tickets</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<br />
+<br />
+<br />
+<h3>Latest comments on your tickets</h3>
+<br />
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Comment
+                </th>
+                <th>
+                    Comment Date
+                </th>
+                <th>
+                    User
+                </th>
+                <th></th>
+                <th>
+                    Ticket
+                </th>
+                <th>
+                    Ticket Date
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(Comment comment in Model.NewCommentsOnUsersTickets)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => comment.Text)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => comment.Date)
+                    </td>
+                    <td>
+                        @await _userManager.FindByIdAsync(comment.OwnerId)
+                    </td>
+                    <td></td>
+                    <td>
+                        @Html.DisplayFor(modelItem => comment.Ticket.Title)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => comment.Ticket.Date)
+                    </td>
+                    <td>
+                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@comment.TicketId">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

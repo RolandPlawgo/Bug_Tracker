@@ -1,9 +1,8 @@
 ﻿@using Bug_Tracker.Authorization
 @model IEnumerable<Bug_Tracker.Models.Project>
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Projects";
 }
-
 <h2>Projects</h2>
 <br />
 <div>
@@ -13,8 +12,6 @@
     }
 </div>
 <br />
-
-
 <div class="row row-cols-1 row-cols-md-3 gy-3">
     @foreach(var item in Model)
     {
