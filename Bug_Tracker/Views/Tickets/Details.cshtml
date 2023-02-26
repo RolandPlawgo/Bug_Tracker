@@ -7,100 +7,122 @@
 @{
     ViewData["Title"] = "Ticket Details";
 }
-<div>
-    <h1>@Html.DisplayFor(model => model.Title)</h1>
-    <h5>@Html.DisplayFor(model => model.ShortDescription)</h5>
-    <br />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Project)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Project.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Priority)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Priority)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Date)
-        </dd>
-        <dt class="col-sm-2">
-            Owner
-        </dt>
-        <dd class="col-sm-10">
-            @await _userManager.FindByIdAsync(Model.OwnerId)
-        </dd>
-    </dl>
-    <br />
-    <h5>@Html.DisplayNameFor(m => m.LongDescription)</h5>
-    <p>@Html.DisplayFor(model => model.LongDescription)</p>
-</div>
-<br />
-<br />
-<div>
-    <div style="min-height:100px; max-height:300px;" class="overflow-auto">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>
-                        Comment
-                    </th>
-                    <th>
-                        Date
-                    </th>
-                    <th>
-                        Owner
-                    </th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (Comment item in Model.Comments)
-                {
-                    <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Text)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Date)
-                        </td>
-                        <td>
-                            @await _userManager.FindByIdAsync(item.OwnerId)
-                        </td>
-                        <td>
-                            @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Update)).Succeeded)
-                            {
-                                <a asp-controller="Comments" asp-action="Edit" asp-route-id="@item.Id" asp-route-ticketId="@Model.Id">Edit</a>
-                            }
-                            &nbsp;
-                            @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Delete)).Succeeded)
-                            {
-                                <a asp-controller="Comments" asp-action="Delete" asp-route-id="@item.Id" asp-route-ticketId="@Model.Id">Delete</a>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<div class="container">
+    <div class="row">
+        <div>
+            <h1>@Html.DisplayFor(model => model.Title)</h1>
+            <br />
+        </div>
+        <div>
+            <h5>@Html.DisplayFor(model => model.ShortDescription)</h5>
+            <br />
+        </div>
     </div>
-    <div>
-        <a asp-controller="Comments" asp-action="Create" asp-route-ticketId="@Model.Id" class="btn btn-primary">Add comment</a>
+    <div class="row">
+        <div class="col-sm-5">
+            <dl class="row">
+                <dt class = "col-sm-2">
+                    @Html.DisplayNameFor(model => model.Project)
+                </dt>
+                <dd class = "col-sm-10">
+                    @Html.DisplayFor(model => model.Project.Title)
+                </dd>
+                <dt class = "col-sm-2">
+                    @Html.DisplayNameFor(model => model.Status)
+                </dt>
+                <dd class = "col-sm-10">
+                    @Html.DisplayFor(model => model.Status)
+                </dd>
+                <dt class = "col-sm-2">
+                    @Html.DisplayNameFor(model => model.Priority)
+                </dt>
+                <dd class = "col-sm-10">
+                    @Html.DisplayFor(model => model.Priority)
+                </dd>
+                <dt class = "col-sm-2">
+                    @Html.DisplayNameFor(model => model.Date)
+                </dt>
+                <dd class = "col-sm-10">
+                    @Html.DisplayFor(model => model.Date)
+                </dd>
+                <dt class="col-sm-2">
+                    Owner
+                </dt>
+                <dd class="col-sm-10">
+                    @await _userManager.FindByIdAsync(Model.OwnerId)
+                </dd>
+            </dl>
+            <br />
+            <h5>@Html.DisplayNameFor(m => m.LongDescription)</h5>
+            <p>@Html.DisplayFor(model => model.LongDescription)</p>
+            <br />
+            <br />
+        </div>
+        <div class="col-xxl-7">
+            <div>
+                <h3>
+                    Comments
+                </h3>
+            </div>
+            <div style="min-height:100px; max-height:300px;" class="overflow-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>
+                                Comment
+                            </th>
+                            <th>
+                                Date
+                            </th>
+                            <th>
+                                Owner
+                            </th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Comment item in Model.Comments)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Text)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Date)
+                                </td>
+                                <td>
+                                    @await _userManager.FindByIdAsync(item.OwnerId)
+                                </td>
+                                <td>
+                                    @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Update)).Succeeded)
+                                    {
+                                        <a asp-controller="Comments" asp-action="Edit" asp-route-id="@item.Id" asp-route-ticketId="@Model.Id">Edit</a>
+                                    }
+                                </td>
+                                    @*&nbsp;*@
+                                <td>
+                                    @if ((await _authorizationService.AuthorizeAsync(User, item, CommentOperationAuthorizationRequirements.Delete)).Succeeded)
+                                    {
+                                        <a asp-controller="Comments" asp-action="Delete" asp-route-id="@item.Id" asp-route-ticketId="@Model.Id">Delete</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <br />
+                <a asp-controller="Comments" asp-action="Create" asp-route-ticketId="@Model.Id" class="btn btn-primary">Add comment</a>
+                <br />
+                <br />
+                <br />
+            </div>
+        </div>
     </div>
 </div>
-<br/>
-<br />
+
 <br />
 <div>
     @if ((await _authorizationService.AuthorizeAsync(User, Model, TicketOperationAuthorizationRequirements.Update)).Succeeded)
