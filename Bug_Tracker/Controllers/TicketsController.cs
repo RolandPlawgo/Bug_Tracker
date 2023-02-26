@@ -101,7 +101,8 @@ namespace Bug_Tracker.Controllers
 
             IEnumerable<Ticket> ticketsToDisplay = await _ticketRepository.GetAsync(page, elementsOnPage, includeProperties, filters, orderBy);
 
-            int pages = (int)Math.Ceiling((decimal)ticketsToDisplay.Count() / (decimal)elementsOnPage);
+            IEnumerable<Ticket> allTicketsToDisplay = await _ticketRepository.GetAsync(includeProperties, filters, orderBy);
+            int pages = (int)Math.Ceiling((decimal)allTicketsToDisplay.Count() / (decimal)elementsOnPage);
             ViewData["Pages"] = pages;
 
             return View(ticketsToDisplay);

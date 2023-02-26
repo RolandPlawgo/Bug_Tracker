@@ -37,7 +37,10 @@ namespace Bug_Tracker.Controllers
             List<Project> projects = new List<Project>();
             foreach (Ticket ticket in latestUsersTickets)
             {
-                projects.Add(ticket.Project);
+                if (!projects.Contains(ticket.Project))
+                {
+                    projects.Add(ticket.Project);
+                }
                 if (projects.Count == 3)
                 {
                     break;
@@ -65,11 +68,10 @@ namespace Bug_Tracker.Controllers
             {
                 foreach (Project project in await _projectRepository.GetAsync())
                 {
-                    if (projects.Contains(project))
+                    if (!projects.Contains(project))
                     {
-                        continue;
+                        projects.Add(project);
                     }
-                    projects.Add(project);
                     if (projects.Count == 3)
                     {
                         break;
