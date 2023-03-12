@@ -78,9 +78,7 @@ using (var scope = app.Services.CreateScope())
 
     InitialAccounts initialAccounts = new InitialAccounts(userManager, roleManager);
     string adminPw = builder.Configuration.GetValue<string>("adminPw");
-    await initialAccounts.EnsureAccountExistsAsync(adminPw, "rolandplawgo@gmail.com", Constants.AdministratorsRole);
-    string managerPw = builder.Configuration.GetValue<string>("managerPw");
-    await initialAccounts.EnsureAccountExistsAsync(managerPw, "manager@mail.com", Constants.ManagersRole);
+    await initialAccounts.EnsureAccountExistsAsync(adminPw, "admin@gmail.com", Constants.AdministratorsRole);
 }
 
 app.Run();

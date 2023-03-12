@@ -69,6 +69,11 @@ namespace Bug_Tracker.Data
         /// <returns>The first entity that satisfies the condition specified in <paramref name="filter"/></returns>
         Task<TEntity?> GetEntityAsync(Expression<Func<TEntity, bool>> filter, List<string>? includeProperties = null);
         /// <summary>
+        /// Counts entities that satisfy each of the conditions specified in <paramref name="filter"/>
+        /// </summary>
+        /// /// <param name="filter">If it's null, no filtering will be performed and all entities will be returned</param>
+        Task<int> CountEntitiesAsync(List<Expression<Func<TEntity, bool>>>? filters = null);
+        /// <summary>
         /// Saves all changes, that have been made in this context, to the database
         /// </summary>
         Task SaveAsync();

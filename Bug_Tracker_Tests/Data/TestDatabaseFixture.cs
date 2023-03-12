@@ -15,7 +15,7 @@ namespace Bug_Tracker_Tests.Data
 {
     public class TestDatabaseFixture
     {
-        private const string connectionString = "Server=(localdb)\\mssqllocaldb;Database=aspnet-Bug_Tracker-B2B95390-88C8-430B-967F-76A5B7B60C17;Trusted_Connection=True;MultipleActiveResultSets=true";
+        private const string connectionString = "Server=(localdb)\\mssqllocaldb;Database=aspnet-Bug_Tracker_Tests-B2B95390-88C8-430B-967F-76A5B7B60C17;Trusted_Connection=True;MultipleActiveResultSets=true";
 
         private static readonly object _lock = new();
         private static bool _databaseInitialized = false;

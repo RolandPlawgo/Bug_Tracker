@@ -26,7 +26,6 @@ namespace Bug_Tracker.Controllers
         }
 
         // GET: Tickets
-        //public async Task<IActionResult> Index(string sortOrder, string searchString, string statusFilter, string priorityFilter, string projectFilter, int page = 1, string ownersTickets = "false")
         public async Task<IActionResult> Index(string sortOrder, string searchString, string statusFilter, string priorityFilter, string projectFilter, int page = 1, bool ownersTickets = false)
         {
             _logger.LogInformation("GET: Tickets");
@@ -53,7 +52,6 @@ namespace Bug_Tracker.Controllers
             List<Expression<Func<Ticket, bool>>> filters = new List<Expression<Func<Ticket, bool>>>();
             Func<IQueryable<Ticket>, IOrderedQueryable<Ticket>>? orderBy = null;
 
-            //if (ownersTickets == "true")
             if (ownersTickets)
             {
                 filters.Add(t => t.OwnerId == _userManager.GetUserId(User));
@@ -101,8 +99,7 @@ namespace Bug_Tracker.Controllers
 
             IEnumerable<Ticket> ticketsToDisplay = await _ticketRepository.GetAsync(page, elementsOnPage, includeProperties, filters, orderBy);
 
-            IEnumerable<Ticket> allTicketsToDisplay = await _ticketRepository.GetAsync(includeProperties, filters, orderBy);
-            int pages = (int)Math.Ceiling((decimal)allTicketsToDisplay.Count() / (decimal)elementsOnPage);
+            int pages = (int)Math.Ceiling((decimal)await _ticketRepository.CountEntitiesAsync(filters) / (decimal)elementsOnPage);
             ViewData["Pages"] = pages;
 
             return View(ticketsToDisplay);

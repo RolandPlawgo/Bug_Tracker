@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace Bug_Tracker.Data
 {
@@ -111,7 +112,6 @@ namespace Bug_Tracker.Data
                 entities = orderBy(entities);
             }
 
-            //pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
             int pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
             if (pages == 0) pages = 1;
 
@@ -164,7 +164,6 @@ namespace Bug_Tracker.Data
                 entities = orderBy(entities);
             }
 
-            //pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
             int pages = (int)Math.Ceiling((decimal)entities.Count() / (decimal)elementsOnPage);
             if (pages == 0) pages = 1;
 
@@ -230,6 +229,21 @@ namespace Bug_Tracker.Data
             {
                 throw new InvalidOperationException("The entity to be deleted does not exist");
             }
+        }
+
+        public async Task<int> CountEntitiesAsync(List<Expression<Func<TEntity, bool>>>? filters = null)
+        {
+            IQueryable<TEntity> entities = dbSet;
+
+            if (filters != null && filters.Count() != 0)
+            {
+                for (int i = 0; i < filters.Count(); i++)
+                {
+                    entities = entities.Where(filters[i]);
+                }
+            }
+
+            return entities.Count();
         }
 
         public async Task SaveAsync()
