@@ -1,10 +1,10 @@
 <h1>Bug Tracker</h1>
 
 <h2>Description</h2>
-This web application is a software defect tracking system (commonly known as an issue tracker/ bug tracker). The software allows users to submit tickets and add comments to them. A role based permission system was implemented to create permission based roles:
-<br />User - adding tickets and comments, editing and deleting tickets and comments, which have been created by <b>this</b> user
-<br />Manager - adding projects (+ all users' permissions)
-<br />Administrator - managing users (changing roles), editing and deleting <b>all</b> projects, tickets and comments (+ all users' and managers' permissions)
+This web application is a software defect tracking system (commonly known as an issue tracker/ bug tracker). The software allows users to submit tickets and add comments to them. A role based permission system was implemented to create the following roles:
+<br />User - adding tickets and comments + editing and deleting tickets and comments, which have been created by <b>this</b> user
+<br />Manager - adding projects + editing and deleting projects, which have been created by <b>this</b> user (+ all users' permissions)
+<br />Administrator - managing users (a.o. changing roles) + editing and deleting <b>all</b> projects, tickets and comments (+ all users' and managers' permissions)
 <br />
 <br />
 
