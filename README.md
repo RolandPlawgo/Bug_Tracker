@@ -27,6 +27,18 @@ Home page: <br/>
 <img src="https://i.imgur.com/BJ8RwvL.png" height="80%" width="80%" alt="Home page"/>
 <br />
 <br />
+<br />
+Managing users (admin): <br/>
+<img src="https://i.imgur.com/E1zIcbB.png" height="80%" width="80%" alt="Managing users"/>
+<br />
+<br />
+Editing user details (admin): <br/>
+<img src="https://i.imgur.com/PJXXtqw.png" height="80%" width="80%" alt="Managing users"/>
+<br />
+<img src="https://i.imgur.com/TwYJcZC.png" height="80%" width="80%" alt="Managing users"/>
+<br />
+<br />
+<br />
 Projects page (manager):  <br/>
 <img src="https://i.imgur.com/l1CCela.png" height="80%" width="80%" alt="Projects page"/>
 <br />
@@ -70,16 +82,6 @@ Creating new ticket: <br/>
 <br />
 Adding new comment: <br/>
 <img src="https://i.imgur.com/TivSAyT.png" height="80%" width="80%" alt="Adding new comment"/>
-<br />
-<br />
-Managing users (admin): <br/>
-<img src="https://i.imgur.com/E1zIcbB.png" height="80%" width="80%" alt="Managing users"/>
-<br />
-<br />
-Editing user details (admin): <br/>
-<img src="https://i.imgur.com/PJXXtqw.png" height="80%" width="80%" alt="Managing users"/>
-<br />
-<img src="https://i.imgur.com/TwYJcZC.png" height="80%" width="80%" alt="Managing users"/>
 <br />
 <br />
 </p>
