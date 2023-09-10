@@ -7,7 +7,7 @@
 @{
     ViewData["Title"] = "Tickets";
 }
-<h2>Tickets</h2>
+<h1 class="h2">Tickets</h1>
 <br />
 <p>
     <a asp-action="Create" class="btn btn-primary">Create New</a>
@@ -139,80 +139,6 @@
         }
     </tbody>
 </table>
-
-@*<div>
-    @if((int)ViewData["CurrentPage"] == 1)
-    {
-        <button class="btn btn-light" disabled>Previous Page</button>
-    }
-    else
-    {
-        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] - 1)" class="btn btn-light" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">
-            Previous Page
-        </a>
-    }
-    &nbsp;
-    @if((int)ViewData["CurrentPage"] == (int)ViewData["Pages"])
-    {
-        <button class="btn btn-light" disabled>Next Page</button>
-    }
-    else
-    {
-        <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] + 1)" class="btn btn-light" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">
-            Next Page
-        </a>
-    }
-    &nbsp;
-    &nbsp;
-    Page @ViewData["CurrentPage"] of @ViewData["Pages"]
-</div>*@
-
-
-@*@if((int)ViewData["CurrentPage"] == 1)
-{
-    <nav aria-label="...">
-        <ul class="pagination">
-            <li class="page-item disabled">
-                <a class="page-link">Previous</a>
-            </li>
-            <li class="page-item active" aria-current="page">
-                <a class="page-link">1</a>
-            </li>
-            <li class="page-item">
-                <a asp-action="Index" asp-route-page="2" class="page-link" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">2</a>
-            </li>
-            <li class="page-item">
-                <a asp-action="Index" asp-route-page="3" class="page-link" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">3</a>
-            </li>
-            <li class="page-item">
-                <a asp-action="Index" asp-route-page="2" class="page-link" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">Next</a>
-            </li>
-        </ul>
-    </nav>
-}
-else
-{
-    <nav aria-label="...">
-        <ul class="pagination">
-            <li class="page-item disabled">
-                <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] - 1)" class="page-link" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">Previous</a>
-            </li>
-            <li class="page-item">
-                <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] - 1)" class="page-link" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">@((int)ViewData["CurrentPage"] - 1)</a>
-            </li>
-            <li class="page-item active" aria-current="page">
-                <a class="page-link">@((int)ViewData["CurrentPage"])</a>
-            </li>
-            <li class="page-item">
-                <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] + 1)" class="page-link" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">@((int)ViewData["CurrentPage"] + 1)</a>
-            </li>
-            <li class="page-item">
-                <a asp-action="Index" asp-route-page="@((int)ViewData["CurrentPage"] + 1)" class="page-link" asp-route-searchString="@ViewData["SearchString"]" asp-route-statusFilter="@ViewData["StatusFilter"]" asp-route-priorityFilter="@ViewData["PriorityFilter"]" asp-route-projectFilter="@ViewData["ProjectFilter"]" asp-route-sortOrder=@ViewData["SortOrder"] asp-route-ownersTickets="@ViewData["OwnersTickets"]">Next</a>
-            </li>
-        </ul>
-    </nav>
-}*@
-
 
 <nav aria-label="Tickets pages">
     <ul class="pagination">
