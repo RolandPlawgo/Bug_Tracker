@@ -1,8 +1,10 @@
 <h1>Bug Tracker</h1>
 <br />
 
+A web application (completed in 2023) built to practice programming and learn ASP .NET Core (MVC), Entity Framework Core and unit testing with XUnit.
+
 <h2>Description</h2>
-This web application is designed to help teams register and track issues efficiently. It allows users to work together effectively.
+A web application to track and manage project issues efficiently with role-based access for users (developers), project managers, and administrators.
 <br/>
 <br/>
 The application includes the following key features:
@@ -34,7 +36,6 @@ The application includes the following key features:
 - <b>.NET Core (MVC)</b>
 - <b>Entity Framework Core</b>
 - <b>xUnit</b>
-- <b>HTML</b>
 - <b>Bootstrap</b>
 <br />
 <br />
@@ -64,12 +65,3 @@ The application includes the following key features:
 <h3>Creating new ticket</h3>
 <img src="https://i.imgur.com/RgWunXW.png" height="80%" width="80%" alt="Creating new ticket"/>
 
-<!--
- ```diff
-- text in red
-+ text in green
-! text in orange
-# text in gray
-@@ text in purple (and bold)@@
-```
---!>
